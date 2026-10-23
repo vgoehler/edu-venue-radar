@@ -1,0 +1,213 @@
+"""The registry of conference series and the logic that picks the edition worth showing.
+
+The YAML file is the source of truth for confirmed facts. Everything here is derived:
+which edition is current, what its deadline probably is, and what the next edition
+looks like before anyone has entered it.
+"""
+
+from dataclasses import dataclass, field
+from datetime import date, datetime
+from pathlib import Path
+
+from ruamel.yaml import YAML
+
+from .dates import month_of
+
+# How long after an expected (not confirmed) deadline we still treat a call as open.
+GRACE_DAYS = 14
+
+
+def _yaml() -> YAML:
+    y = YAML()
+    y.preserve_quotes = True
+    y.width = 4096
+    y.indent(mapping=2, sequence=4, offset=2)
+    return y
+
+
+def load(path: Path) -> dict:
+    with path.open(encoding="utf-8") as fh:
+        return _yaml().load(fh)
+
+
+def save(data: dict, path: Path) -> None:
+    with path.open("w", encoding="utf-8") as fh:
+        _yaml().dump(data, fh)
+
+
+def to_date(value) -> date | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value))
+
+
+def _shift_year(d: date, year: int) -> date:
+    try:
+        return d.replace(year=year)
+    except ValueError:  # 29 February
+        return d.replace(year=year, day=28)
+
+
+@dataclass
+class Call:
+    """One call of an edition: workshops, papers, special sessions, ..."""
+
+    kind: str
+    deadline: date | None = None
+    hint: date | None = None
+    note: str | None = None
+    closed: bool = False
+    expected: date | None = None
+
+    def effective_deadline(self) -> date | None:
+        return self.deadline or self.expected
+
+    def status(self, today: date) -> str:
+        """open, expected, unknown or closed."""
+        if self.deadline:
+            return "open" if self.deadline >= today else "closed"
+        if self.closed:
+            return "closed"
+        if self.expected:
+            return "closed" if (today - self.expected).days > GRACE_DAYS else "expected"
+        return "unknown"
+
+
+STATUS_ORDER = ["open", "expected", "unknown", "closed"]
+
+
+@dataclass
+class Edition:
+    series_id: str
+    year: int
+    url: str | None
+    url_is_fallback: bool
+    location: str | None
+    start: date | None
+    end: date | None
+    when: str | None
+    calls: list[Call] = field(default_factory=list)
+    synthesized: bool = False
+
+    @property
+    def approx_start(self) -> date:
+        """Conference date, or a stand-in from the free text, for ordering and estimates."""
+        if self.start:
+            return self.start
+        month = month_of(self.when or "") or 7
+        return date(self.year, month, 1)
+
+    def live_calls(self, today: date) -> list[Call]:
+        return [c for c in self.calls if c.status(today) != "closed"]
+
+    def next_deadline(self, today: date) -> date | None:
+        """Soonest deadline among the calls that are not over."""
+        dates = [d for c in self.live_calls(today) if (d := c.effective_deadline())]
+        return min(dates) if dates else None
+
+    def status(self, today: date) -> str:
+        """The most open status among the calls; an edition without calls is unknown."""
+        if not self.calls:
+            return "unknown"
+        return min((c.status(today) for c in self.calls), key=STATUS_ORDER.index)
+
+
+def expected_from_hint(hint: date, conference: date) -> date:
+    """The previous cycle's deadline moved to the latest year that still lies before the conference."""
+    guess = _shift_year(hint, conference.year)
+    while guess >= conference:
+        guess = _shift_year(guess, guess.year - 1)
+    return guess
+
+
+def edition(series: dict, year: int) -> Edition:
+    editions = series["editions"]
+    raw = editions[year] if year in editions else editions[str(year)]
+    ed = Edition(
+        series_id=series["id"],
+        year=int(year),
+        url=raw.get("url"),
+        url_is_fallback=bool(raw.get("url_is_fallback", False)),
+        location=raw.get("location"),
+        start=to_date(raw.get("start")),
+        end=to_date(raw.get("end")),
+        when=raw.get("when"),
+    )
+    for kind, raw_call in (raw.get("calls") or {}).items():
+        c = raw_call or {}
+        call = Call(
+            kind=kind,
+            deadline=to_date(c.get("deadline")),
+            hint=to_date(c.get("deadline_hint")),
+            note=c.get("note"),
+            closed=bool(c.get("closed", False)),
+        )
+        if not call.deadline and call.hint:
+            call.expected = expected_from_hint(call.hint, ed.approx_start)
+        ed.calls.append(call)
+    return ed
+
+
+def next_edition(series: dict, prev: Edition) -> Edition:
+    """The edition after `prev`, guessed from it until someone enters the real one."""
+    year = prev.year + 1
+    month = prev.approx_start.strftime("%B")
+    prev_place = prev.location or "unknown"
+    location = prev_place if prev_place.startswith("not announced") else f"not announced ({prev.year}: {prev_place})"
+    # The previous edition's page is what exists today; the crawler probes url_pattern
+    # for the new year and reports when that page goes online.
+    ed = Edition(
+        series_id=prev.series_id,
+        year=year,
+        url=prev.url,
+        url_is_fallback=True,
+        location=location,
+        start=None,
+        end=None,
+        when=f"{month} {year}",
+        synthesized=True,
+    )
+    for c in prev.calls:
+        hint = c.deadline or c.hint or c.expected
+        call = Call(kind=c.kind, hint=hint)
+        if hint:
+            call.expected = expected_from_hint(hint, ed.approx_start)
+        ed.calls.append(call)
+    return ed
+
+
+def current_edition(series: dict, today: date) -> Edition:
+    """The first edition with a call that is not over, synthesizing later ones as needed."""
+    years = sorted(int(y) for y in series["editions"])
+    ed = edition(series, years[0])
+    for y in years[1:]:
+        if ed.status(today) != "closed":
+            return ed
+        ed = edition(series, y)
+    while ed.status(today) == "closed":
+        ed = next_edition(series, ed)
+    return ed
+
+
+def roll(data: dict, series_id: str) -> int:
+    """Append the next edition after the last entered one to the registry. Returns its year."""
+    series = find(data, series_id)
+    last = max(int(y) for y in series["editions"])
+    nxt = next_edition(series, edition(series, last))
+    entry: dict = {"url": nxt.url, "url_is_fallback": True, "location": nxt.location, "when": nxt.when}
+    calls = {c.kind: ({"deadline_hint": c.hint} if c.hint else {}) for c in nxt.calls}
+    if calls:
+        entry["calls"] = calls
+    series["editions"][nxt.year] = entry
+    return nxt.year
+
+
+def find(data: dict, series_id: str) -> dict:
+    for s in data["series"]:
+        if s["id"] == series_id:
+            return s
+    raise KeyError(series_id)

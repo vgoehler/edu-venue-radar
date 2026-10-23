@@ -1,0 +1,32 @@
+{
+  "id": "educon",
+  "edition": 2027,
+  "url": "https://educon-conference.org/2027",
+  "checked": "2026-10-23T13:51:38+00:00",
+  "status": 200,
+  "final_url": "https://educon-conference.org/2027",
+  "sha256": "836ce6aef4cb68f69fd20261b63d23e1e8f7a5bf25ed6d6fd179a15f6dac3c1c",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:28:19+00:00",
+  "candidates": [
+    {
+      "when": "2026-10-30",
+      "keyword": "special session",
+      "context": "s & Information Oct 08, 2026 Alternative Session Proposal Submission (Special Session) Oct 26, 2026 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission"
+    },
+    {
+      "when": "2026-12-07",
+      "keyword": "abstract",
+      "context": "6 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission of Proposals for Workshops, Panels, and Posters Jan 11, 2027 Paper Decision Notifications Feb 15,"
+    }
+  ],
+  "probes": [
+    {
+      "url": "https://educon-conference.org/2028",
+      "status": 404,
+      "final_url": "https://educon-conference.org/2028",
+      "exists": false
+    }
+  ]
+}

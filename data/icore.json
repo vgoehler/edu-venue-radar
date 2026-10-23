@@ -1,0 +1,56 @@
+{
+  "source": "ICORE2026",
+  "checked": "2026-10-23",
+  "ranks": {
+    "csedu": {
+      "title": "International Conference on Computer Supported Education",
+      "acronym": "CSEDU",
+      "rank": "B"
+    },
+    "educon": {
+      "title": "IEEE Global Engineering Education Conference",
+      "acronym": "EDUCON",
+      "rank": "C"
+    },
+    "iticse": {
+      "title": "Annual Conference on Innovation and Technology in Computer Science Education",
+      "acronym": "ITiCSE",
+      "rank": "B"
+    },
+    "ectel": {
+      "title": "European Conference on Technology Enhanced Learning",
+      "acronym": "EC-TEL",
+      "rank": "B"
+    },
+    "fie": {
+      "title": "Frontiers in Education",
+      "acronym": "FIE",
+      "rank": "C"
+    },
+    "sigcite": {
+      "title": "ACM Information Technology Education",
+      "acronym": "SIGITE",
+      "rank": "National: USA"
+    },
+    "sigcse-ts": {
+      "title": "ACM Special Interest Group on Computer Science Education Conference",
+      "acronym": "SIGCSE",
+      "rank": "A"
+    },
+    "lak": {
+      "title": "International Conference on Learning Analytics and Knowledge",
+      "acronym": "LAK",
+      "rank": "A"
+    },
+    "aied": {
+      "title": "International Conference on Artificial Intelligence in Education",
+      "acronym": "AIED",
+      "rank": "A"
+    },
+    "icce": {
+      "title": "International Conference on Computers in Education",
+      "acronym": "ICCE",
+      "rank": "C"
+    }
+  }
+}

@@ -1,0 +1,147 @@
+import json
+from datetime import date
+
+from edu_venue_radar import crawl, site
+from edu_venue_radar.registry import edition
+
+REG = {
+    "series": [
+        {
+            "id": "a",
+            "name": "Alpha",
+            "organizer": "ACM",
+            "icore": "ALPHA",
+            "continent": "Europe",
+            "topics": ["sotl"],
+            "keywords": ["workshop"],
+            "url_pattern": "https://a.org/{year}/",
+            "editions": {
+                2027: {
+                    "url": "https://a.org/2027/",
+                    "start": "2027-04-06",
+                    "end": "2027-04-09",
+                    "calls": {"workshops": {"deadline": "2026-11-01"}, "papers": {"deadline": "2026-10-01"}},
+                }
+            },
+        },
+        {
+            "id": "b",
+            "name": "Beta",
+            "continent": "Online",
+            "topics": ["digital-education"],
+            "editions": {2027: {"url": "https://b.org/", "start": "2027-02-01", "calls": {"papers": {"deadline": "2026-08-01"}}}},
+        },
+    ]
+}
+
+
+class FakeResponse:
+    def __init__(self, status, text, url):
+        self.status_code, self.text, self.url = status, text, url
+        self.headers = {"content-type": "text/html"}
+
+
+class FakeSession:
+    def __init__(self, pages):
+        self.pages = pages
+        self.headers = {}
+
+    def get(self, url, **_):
+        status, text = self.pages.get(url, (404, ""))
+        return FakeResponse(status, text, url)
+
+
+def test_crawl_records_candidates_changes_and_probes(tmp_path):
+    pages = {
+        "https://a.org/2027/": (200, "<p>Workshop proposals due 7 December 2026</p><script>x</script>"),
+        "https://a.org/2028/": (200, "<p>Save the date</p>"),
+    }
+    session = FakeSession(pages)
+    first = crawl.crawl_series(session, REG["series"][0], date(2026, 10, 23), tmp_path)
+    assert first["candidates"][0]["when"] == "2026-12-07"
+    assert first["changed_on"] is None
+    assert [p["exists"] for p in first["probes"]] == [True]
+
+    pages["https://a.org/2027/"] = (200, "<p>Workshop proposals due 14 December 2026</p>")
+    second = crawl.crawl_series(session, REG["series"][0], date(2026, 10, 30), tmp_path)
+    assert second["changed_on"] == second["checked"]
+    assert json.loads((tmp_path / "a.json").read_text())["candidates"][0]["when"] == "2026-12-14"
+
+
+def test_rotating_teasers_without_dates_are_no_change(tmp_path):
+    pages = {"https://a.org/2027/": (200, "<p>News: new podcast.</p><p>Workshop proposals due 7 December 2026.</p>")}
+    session = FakeSession(pages)
+    crawl.crawl_series(session, REG["series"][0], date(2026, 10, 23), tmp_path)
+    pages["https://a.org/2027/"] = (200, "<p>News: keynote announced.</p><p>Workshop proposals due 7 December 2026.</p>")
+    assert crawl.crawl_series(session, REG["series"][0], date(2026, 10, 23), tmp_path)["changed_on"] is None
+
+
+def test_an_old_whole_page_hash_is_a_baseline_not_a_change(tmp_path):
+    old = {"url": "https://a.org/2027/", "sha256": "0" * 64, "changed_on": "2026-09-01T05:00:00+00:00"}
+    (tmp_path / "a.json").write_text(json.dumps(old))
+    pages = {"https://a.org/2027/": (200, "<p>Workshop proposals due 7 December 2026.</p>")}
+    session = FakeSession(pages)
+    first = crawl.crawl_series(session, REG["series"][0], date(2026, 10, 23), tmp_path)
+    assert first["changed_on"] == old["changed_on"]
+    assert first["sha256_of"] == crawl.HASH_OF
+    pages["https://a.org/2027/"] = (200, "<p>Workshop proposals due 14 December 2026.</p>")
+    second = crawl.crawl_series(session, REG["series"][0], date(2026, 10, 30), tmp_path)
+    assert second["changed_on"] == second["checked"]
+
+
+def test_crawl_drops_dates_from_the_conference_on(tmp_path):
+    text = "<p>Workshop proposals due 7 December 2026. Workshops run on 7 April 2027.</p>"
+    session = FakeSession({"https://a.org/2027/": (200, text)})
+    found = crawl.crawl_series(session, REG["series"][0], date(2026, 10, 23), tmp_path)["candidates"]
+    assert [c["when"] for c in found] == ["2026-12-07"]
+
+
+def test_conference_start_falls_back_to_the_named_month_only():
+    s = {"id": "x", "editions": {2027: {"when": "November 2027"}}}
+    assert crawl.conference_start(edition(s, 2027)) == date(2027, 11, 1)
+    s["editions"][2027] = {"when": "2027"}
+    assert crawl.conference_start(edition(s, 2027)) is None
+    s["editions"][2027] = {"start": "2027-04-06", "when": "November 2027"}
+    assert crawl.conference_start(edition(s, 2027)) == date(2027, 4, 6)
+
+
+def test_crawl_keeps_old_findings_when_the_page_is_down(tmp_path):
+    good = FakeSession({"https://b.org/": (200, "<p>nothing</p>")})
+    crawl.crawl_series(good, REG["series"][1], date(2026, 6, 1), tmp_path)
+    down = crawl.crawl_series(FakeSession({}), REG["series"][1], date(2026, 6, 2), tmp_path)
+    assert down["error"] == "HTTP 404"
+    assert "sha256" in down
+
+
+def test_build_groups_by_year_and_marks_soon(tmp_path):
+    crawl_dir = tmp_path / "crawl"
+    crawl_dir.mkdir()
+    (crawl_dir / "a.json").write_text(
+        json.dumps(
+            {
+                "edition": 2027,
+                "checked": "2026-10-23T05:00:00+00:00",
+                "changed_on": "2026-10-23T05:00:00+00:00",
+                "candidates": [{"when": "2026-12-07", "keyword": "workshop", "context": "Workshop proposals due"}],
+                "probes": [{"url": "https://a.org/2028/", "exists": True}],
+            }
+        )
+    )
+    icore = tmp_path / "icore.json"
+    icore.write_text(json.dumps({"source": "ICORE2026", "ranks": {"a": {"rank": "B"}}}))
+    out = site.build(REG, crawl_dir, icore, tmp_path / "docs" / "index.html", date(2026, 10, 23))
+    html = out.read_text()
+    assert "Conferences in 2027" in html and "Conferences in 2028" in html
+    assert 'class="cl st-soon"' in html
+    assert 'class="cl st-closed"' in html
+    assert "page changed 23.10.2026" in html
+    assert "page up: a.org/2028/" in html
+    assert "ICORE2026" in html
+    assert "guessed from the last edition" in html  # Beta rolled to 2028
+
+
+def test_conference_text():
+    s = {"id": "a", "editions": {2027: {"start": "2027-04-06", "end": "2027-04-09"}}}
+    assert site.conference_text(edition(s, 2027)) == "06.–09.04.2027"
+    s["editions"][2027] = {"start": "2027-06-30", "end": "2027-07-02"}
+    assert site.conference_text(edition(s, 2027)) == "30.06.–02.07.2027"

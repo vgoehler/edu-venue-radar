@@ -1,0 +1,27 @@
+{
+  "id": "itk",
+  "edition": 2027,
+  "url": "https://easychair.org/cfp/ITK2027",
+  "checked": "2026-10-23T13:51:33+00:00",
+  "status": 200,
+  "final_url": "https://easychair.org/cfp/ITK2027",
+  "sha256": "f03e085d79de617404f78eab1cc11ee63bbad2192c58a3faf6852cba187dbb82",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:28:14+00:00",
+  "candidates": [
+    {
+      "when": "2026-11-02",
+      "keyword": "deadline",
+      "context": "Technology in Education Conference 2027 Tampere Hall Tampere, Finland, April 21-23, 2027 Conference web page https://itk-konferenssi.fi/en Submission deadline November 2, 2026 Topics: educational technology artificial intelligence in education ITK2027 – A New Contract for Learning 21–23 April 2027 | Tampere Hall, Tampere, Finland Cal"
+    }
+  ],
+  "probes": [
+    {
+      "url": "https://easychair.org/cfp/ITK2028",
+      "status": 404,
+      "final_url": "https://easychair.org/cfp/ITK2028",
+      "exists": false
+    }
+  ]
+}

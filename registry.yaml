@@ -1,0 +1,490 @@
+# Digital Education Venue Radar: registry of conference series.
+#
+# One entry per series. `editions` is keyed by the year the conference takes place.
+#
+# Edition fields (all optional):
+#   url              page of this edition, or of the previous one as a fallback (then set url_is_fallback)
+#   location         where it takes place
+#   start, end       ISO dates of the conference
+#   when             free text while the dates are not known ("September 2027")
+#   calls            one entry per call, keyed by kind (workshops, papers, special-sessions, ...):
+#     deadline       ISO date, only when confirmed on the official page
+#     deadline_hint  ISO date of the previous cycle's deadline, shown as "typically"
+#     note           free text (formats in the call, provisional dates, notification)
+#     closed         true when the call is known to be over without a date
+#
+# Series fields:
+#   url_pattern        edition page with {year} / {yy}; the crawler probes it for the next year
+#   deadlines_pattern  separate page with the dates, crawled together with the edition page
+#   icore              acronym in the ICORE portal, or null for venues ICORE does not list
+#   keywords           words the crawler looks for next to dates
+#   layout             prose (default) or date-first for pages that list "date label date label"
+#
+# `edu-venue-radar roll <id>` appends the next edition from the last one.
+
+series:
+  - id: itk
+    name: ITK
+    full_name: Interaktiivinen tekniikka koulutuksessa (Interactive Technology in Education)
+    organizer: Suomen eOppimiskeskus (Finnish eLearning Centre)
+    kind: practitioner event, proceedings in Finnish
+    icore: null
+    continent: Europe
+    topics: [digital-education, ai-literacy]
+    url_pattern: https://easychair.org/cfp/ITK{year}
+    keywords: [call for presentations, workshop, deadline]
+    editions:
+      2027:
+        url: https://easychair.org/cfp/ITK2027
+        location: Tampere Hall, Tampere, Finland
+        start: 2027-04-21
+        end: 2027-04-23
+        calls:
+          presentations:
+            deadline: 2026-11-02
+            note: one call for ITK Forum, Arena, Workshop (hands-on) and Poster
+
+  - id: csedu
+    name: CSEDU
+    full_name: International Conference on Computer Supported Education
+    organizer: INSTICC (commercial organizer, SCITEPRESS proceedings)
+    icore: CSEDU
+    continent: Europe
+    topics: [digital-education]
+    keywords: [paper submission, workshop, deadline]
+    editions:
+      2027:
+        url: https://csedu.scitevents.org/
+        location: Rome, Italy (unconfirmed)
+        when: April 2027
+        calls:
+          papers:
+            deadline: 2026-11-17
+            note: second round (position/regular papers) 21.12.2026
+
+  - id: educon
+    name: EDUCON
+    full_name: IEEE Global Engineering Education Conference
+    organizer: IEEE Education Society
+    icore: EDUCON
+    continent: Europe
+    topics: [engineering-education, digital-education]
+    url_pattern: https://educon-conference.org/{year}
+    keywords: [workshop, special session, abstract, deadline]
+    editions:
+      2027:
+        url: https://educon-conference.org/2027
+        location: Timișoara, Romania
+        start: 2027-04-06
+        end: 2027-04-09
+        calls:
+          special-sessions:
+            deadline: 2026-10-08
+          papers:
+            deadline: 2026-10-30
+            note: abstracts; preliminary papers 07.12.2026
+          workshops:
+            deadline: 2026-12-07
+            note: workshops, panels and posters
+
+  - id: eurosotl
+    name: EuroSoTL
+    full_name: European Conference on the Scholarship of Teaching and Learning
+    organizer: European SoTL network, hosted by a university each time
+    icore: null
+    continent: Europe
+    topics: [sotl]
+    keywords: [call for contributions, proposal, workshop, deadline]
+    editions:
+      2027:
+        url: https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en
+        url_is_fallback: true
+        location: London, UK
+        start: 2027-06-08
+        end: 2027-06-11
+        calls:
+          contributions:
+            deadline_hint: 2024-12-15
+            note: the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels
+
+  - id: iticse
+    name: ITiCSE
+    full_name: Innovation and Technology in Computer Science Education
+    organizer: ACM SIGCSE
+    icore: ITiCSE
+    continent: Europe
+    topics: [computing-education]
+    url_pattern: https://iticse.acm.org/{year}/
+    keywords: [working group, abstract, paper, deadline]
+    editions:
+      2027:
+        url: https://iticse.acm.org/2027/
+        location: University of Glasgow, Scotland
+        start: 2027-07-12
+        end: 2027-07-14
+        calls:
+          working-groups:
+            deadline_hint: 2026-01-11
+            note: 2-page proposal by up to four leaders; groups meet 09–11.07.
+          papers:
+            deadline: 2027-01-18
+            note: abstracts 11.01.2027; dates provisional
+
+  - id: eden
+    name: EDEN
+    full_name: EDEN Digital Learning Europe Annual Conference
+    organizer: EDEN Digital Learning Europe
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [call for, workshop, deadline]
+    editions:
+      2027:
+        url: https://eden-europe.eu/
+        location: Winterthur, Switzerland
+        start: 2027-07-04
+        end: 2027-07-06
+
+  - id: delfi
+    name: DELFI
+    full_name: Fachtagung Bildungstechnologien (with HDI when it runs)
+    organizer: GI, Fachgruppe Bildungstechnologien
+    kind: German national, proceedings in GI LNI
+    icore: null
+    continent: Europe
+    topics: [digital-education, computing-education]
+    url_pattern: https://delfi-tagung.de/{year}/
+    deadlines_pattern: https://delfi-tagung.de/{year}/termine
+    layout: date-first
+    keywords: [einreichung von workshops, einreichung von kurz, einreichung von poster, einreichung]
+    editions:
+      2027:
+        url: https://delfi-tagung.de/2027/
+        location: PH St. Gallen, Rorschach on Lake Constance, Switzerland
+        start: 2027-08-31
+        end: 2027-09-02
+        calls:
+          workshops:
+            deadline: 2027-03-03
+            note: workshops and tutorials, notification 24.03.2027
+          abstracts:
+            deadline: 2027-04-01
+            note: abstracts for short and long papers
+          papers:
+            deadline: 2027-04-07
+            note: short and long papers, notification 05.05.2027
+          posters-demos:
+            deadline: 2027-05-19
+            note: notification 09.06.2027
+          artifacts:
+            deadline: 2027-06-01
+            note: notification 30.06.2027
+
+  - id: uff
+    name: University:Future Festival
+    full_name: University:Future Festival
+    organizer: Hochschulforum Digitalisierung, StIL, Stifterverband
+    kind: practice festival, no proceedings
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [call for participation, einreichung, frist]
+    editions:
+      2027:
+        url: https://festival.hfd.digital
+        location: several German sites plus online
+        when: June 2027
+        calls:
+          sessions:
+            deadline_hint: 2026-02-16
+
+  - id: turn
+    name: TURN
+    full_name: TURN Conference
+    organizer: Stiftung Innovation in der Hochschullehre (StIL)
+    kind: practice forum
+    icore: null
+    continent: Europe
+    topics: [digital-education, sotl]
+    url_pattern: https://sessionize.com/turn-conference-{yy}
+    keywords: [call for papers, deadline, closes]
+    editions:
+      2027:
+        url: https://sessionize.com/turn-conference-26
+        url_is_fallback: true
+        location: not announced (2026 Bauhaus-Universität Weimar)
+        when: autumn 2027
+        calls:
+          sessions:
+            deadline_hint: 2026-03-01
+
+  - id: koli
+    name: Koli Calling
+    full_name: Koli Calling International Conference on Computing Education Research
+    organizer: University of Eastern Finland, ACM proceedings
+    icore: null
+    continent: Europe
+    topics: [computing-education]
+    keywords: [submission, workshop, deadline]
+    editions:
+      2027:
+        url: https://www.kolicalling.fi/
+        location: Koli, Finland
+        when: early November 2027
+        calls:
+          papers:
+            deadline_hint: 2026-07-12
+            note: full and discussion papers; one pre-conference workshop
+
+  - id: ectel
+    name: EC-TEL
+    full_name: European Conference on Technology Enhanced Learning
+    organizer: EA-TEL, Springer LNCS
+    icore: EC-TEL
+    continent: Europe
+    topics: [digital-education]
+    keywords: [workshop, proposal, deadline]
+    editions:
+      2027:
+        url: https://ea-tel.eu/
+        location: not announced (2026 Valencia)
+        when: mid-September 2027
+
+  - id: gmw
+    name: GMW
+    full_name: Jahrestagung der Gesellschaft für Medien in der Wissenschaft
+    organizer: Gesellschaft für Medien in der Wissenschaft
+    kind: German-speaking society conference
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [call, einreichung, frist, workshop]
+    editions:
+      2027:
+        url: https://www.gmw-online.de/category/gmw-jahrestagungen/
+        location: not announced (2026 Hochschule Campus Wien)
+        when: September 2027
+
+  - id: eadtu
+    name: EADTU I-HE
+    full_name: Innovating Higher Education Conference
+    organizer: EADTU (European distance and open universities)
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [call for abstracts, deadline, submission]
+    editions:
+      2027:
+        url: https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml
+        url_is_fallback: true
+        location: not announced (2026 Open Universiteit, The Hague)
+        when: October 2027
+        calls:
+          abstracts:
+            deadline_hint: 2026-05-27
+
+  - id: oeb
+    name: OEB Global
+    full_name: OEB Global (Online Educa Berlin)
+    organizer: OEB / ICWE, conference with trade fair
+    kind: mixed academia and industry
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [proposal, deadline, submit]
+    editions:
+      2027:
+        url: https://is.oeb.global/conference/submit-a-proposal
+        location: Berlin, Germany
+        when: early December 2027
+        calls:
+          sessions:
+            deadline_hint: 2025-05-31
+
+  - id: dghd
+    name: dghd
+    full_name: dghd-Jahrestagung
+    organizer: Deutsche Gesellschaft für Hochschuldidaktik
+    kind: German-speaking society conference
+    icore: null
+    continent: Europe
+    topics: [sotl]
+    keywords: [einreichung, workshop, frist]
+    editions:
+      2027:
+        url: https://dghd.ustp.at/
+        location: USTP St. Pölten, Austria
+        start: 2027-02-09
+        end: 2027-02-11
+        calls:
+          contributions:
+            deadline: 2026-08-15
+            note: one call for talks, posters, lightning talks and workshops (45–90 min, max. 15 participants)
+
+  - id: learntec
+    name: LEARNTEC
+    full_name: LEARNTEC Kongress
+    organizer: Messe Karlsruhe
+    kind: trade fair with congress
+    icore: null
+    continent: Europe
+    topics: [digital-education]
+    keywords: [call for papers, einreichung, frist]
+    editions:
+      2027:
+        url: https://www.learntec.de/
+        location: Messe Karlsruhe, Germany
+        when: May 2027
+        calls:
+          congress:
+            closed: true
+            note: call typically mid-October of the year before
+
+  - id: fie
+    name: FIE
+    full_name: Frontiers in Education
+    organizer: IEEE Education Society and ASEE
+    icore: FIE
+    continent: North America
+    topics: [engineering-education, computing-education]
+    url_pattern: https://fie-conference.org/{year}
+    keywords: [alternative session, workshop, special session, deadline]
+    editions:
+      2027:
+        url: https://fie-conference.org/2026
+        url_is_fallback: true
+        location: not announced, usually North America (2026 Paphos)
+        when: October 2027
+        calls:
+          workshops-special-sessions:
+            deadline_hint: 2026-02-23
+            note: "alternative sessions: workshops, special sessions, panels"
+
+  - id: sigcite
+    name: SIGCITE
+    full_name: ACM SIGCITE Conference (formerly SIGITE)
+    organizer: ACM SIGCITE
+    icore: SIGITE
+    continent: North America
+    topics: [computing-education, ai-literacy]
+    url_pattern: https://easychair.org/cfp/SIGCITE-{yy}
+    keywords: [special session, deadline, submission]
+    editions:
+      2027:
+        url: https://easychair.org/cfp/SIGCITE-26
+        url_is_fallback: true
+        location: not announced (2026 UNC Wilmington)
+        when: November 2027
+        calls:
+          papers:
+            deadline_hint: 2026-08-02
+          special-sessions:
+            deadline_hint: 2026-09-27
+
+  - id: sigcse-ts
+    name: SIGCSE TS
+    full_name: ACM SIGCSE Technical Symposium
+    organizer: ACM SIGCSE
+    icore: SIGCSE
+    continent: North America
+    topics: [computing-education]
+    url_pattern: https://sigcse-ts.acm.org/{year}/
+    keywords: [special session, panel, deadline]
+    editions:
+      2027:
+        url: https://sigcse-ts.acm.org/2027/
+        location: SAFE Credit Union Convention Center, Sacramento, USA
+        start: 2027-02-17
+        end: 2027-02-20
+        calls:
+          papers:
+            deadline: 2026-07-03
+            note: abstracts 26.06.2026
+          special-sessions:
+            deadline: 2026-07-03
+            note: also panels, tutorials and affiliated events
+          posters-lightning-talks:
+            deadline: 2026-09-30
+
+  - id: sotl-commons
+    name: SoTL Commons
+    full_name: SoTL Commons Conference
+    organizer: Georgia Southern University
+    icore: null
+    continent: North America
+    topics: [sotl]
+    keywords: [proposal, deadline, submission]
+    editions:
+      2027:
+        url: https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals
+        location: Hyatt Regency Riverfront, Savannah, USA
+        start: 2027-03-03
+        end: 2027-03-05
+        calls:
+          proposals:
+            deadline: 2026-10-23
+
+  - id: lak
+    name: LAK
+    full_name: International Conference on Learning Analytics and Knowledge
+    organizer: Society for Learning Analytics Research (SoLAR), ACM proceedings
+    icore: LAK
+    continent: South America
+    topics: [learning-analytics]
+    url_pattern: https://www.solaresearch.org/events/lak/lak{yy}/
+    keywords: [workshop, tutorial, deadline]
+    editions:
+      2027:
+        url: https://www.solaresearch.org/events/lak/lak27/
+        location: Recife, Brazil
+        start: 2027-03-08
+        end: 2027-03-12
+        calls:
+          workshops:
+            deadline: 2026-09-21
+            note: workshops and tutorials
+
+  - id: aied
+    name: AIED
+    full_name: International Conference on Artificial Intelligence in Education (with EDM and L@S)
+    organizer: International AIED Society, Springer LNCS
+    icore: AIED
+    continent: Australia and Asia-Pacific
+    topics: [ai-in-education, ai-literacy]
+    keywords: [workshop, proposal, deadline]
+    editions:
+      2027:
+        url: https://iaied.org/conferences
+        location: Adelaide Convention Centre, Australia
+        start: 2027-07-18
+        end: 2027-07-23
+
+  - id: icce
+    name: ICCE
+    full_name: International Conference on Computers in Education
+    organizer: Asia-Pacific Society for Computers in Education (APSCE)
+    icore: ICCE
+    continent: Australia and Asia-Pacific
+    topics: [digital-education]
+    url_pattern: https://apsce.net/events/icce-{year}
+    keywords: [workshop, proposal, deadline]
+    editions:
+      2027:
+        url: https://apsce.net/events/icce-2026
+        url_is_fallback: true
+        location: not announced (2026 Christchurch)
+        when: late November 2027
+
+  - id: issotl
+    name: ISSOTL
+    full_name: International Society for the Scholarship of Teaching and Learning Conference
+    organizer: ISSOTL
+    icore: null
+    continent: Online
+    topics: [sotl]
+    keywords: [call for proposals, deadline, workshop]
+    editions:
+      2027:
+        url: https://issotl.com/
+        location: virtual, the first online-only ISSOTL
+        when: late October 2027

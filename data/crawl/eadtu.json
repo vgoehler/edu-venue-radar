@@ -1,0 +1,13 @@
+{
+  "id": "eadtu",
+  "edition": 2027,
+  "url": "https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml",
+  "checked": "2026-10-23T13:51:58+00:00",
+  "status": 200,
+  "final_url": "https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml",
+  "sha256": "ec04130315e04cbbe2245db1e02ce921610a8ce9e040f08d2a46b421a1ad7c55",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:29:16+00:00",
+  "candidates": []
+}

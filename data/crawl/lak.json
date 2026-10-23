@@ -1,0 +1,27 @@
+{
+  "id": "lak",
+  "edition": 2028,
+  "url": "https://www.solaresearch.org/events/lak/lak27/",
+  "checked": "2026-10-23T13:52:12+00:00",
+  "status": 200,
+  "final_url": "https://www.solaresearch.org/events/lak/lak27/",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:31:33+00:00",
+  "candidates": [],
+  "probes": [
+    {
+      "url": "https://www.solaresearch.org/events/lak/lak28/",
+      "status": 404,
+      "final_url": "https://www.solaresearch.org/events/lak/lak28/",
+      "exists": false
+    },
+    {
+      "url": "https://www.solaresearch.org/events/lak/lak29/",
+      "status": 404,
+      "final_url": "https://www.solaresearch.org/events/lak/lak29/",
+      "exists": false
+    }
+  ]
+}

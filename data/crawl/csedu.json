@@ -1,0 +1,24 @@
+{
+  "id": "csedu",
+  "edition": 2027,
+  "url": "https://csedu.scitevents.org/",
+  "checked": "2026-10-23T13:51:35+00:00",
+  "status": 200,
+  "final_url": "https://csedu.scitevents.org/",
+  "sha256": "c4f722422a4556e601e79d53ab7b7702b01a1f964464c0bd10dfef3150de961d",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:28:17+00:00",
+  "candidates": [
+    {
+      "when": "2026-11-17",
+      "keyword": "paper submission",
+      "context": "Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Educa"
+    },
+    {
+      "when": "2026-12-21",
+      "keyword": "paper submission",
+      "context": "Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Education, is a yearly meeting place for presenting and di"
+    }
+  ]
+}

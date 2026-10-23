@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Education Venue Radar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%232f5d8a'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1f2328; --muted: #6a6f76; --line: #e3e0d8; --head: #f1eee6;
+  --accent: #2f5d8a; --soon: #b3261e; --soon-bg: #fdecea; --open: #1e6b3a; --flag: #8a5a00; --flag-bg: #fff4d6;
+  --chip: #e8eef5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
+    --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
+    --chip: #253041;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
+  --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
+  --chip: #253041;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1400px; margin: 0 auto; }
+h1 { margin: 0 0 4px; font-size: 1.6rem; }
+h2 { margin: 36px 0 4px; font-size: 1.3rem; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+h3 { margin: 20px 0 8px; font-size: 1.05rem; color: var(--muted); }
+a { color: var(--accent); }
+.lead { color: var(--muted); max-width: 70ch; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 16px 0; font-size: .9rem; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; min-width: 1100px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { background: var(--head); font-size: .85rem; font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+.note { color: var(--muted); font-size: .82rem; margin-top: 2px; }
+.muted { color: var(--muted); }
+.chip { display: inline-block; background: var(--chip); border-radius: 10px; padding: 0 7px; margin: 4px 4px 0 0; font-size: .75rem; }
+.nowrap { white-space: nowrap; }
+.rank { font-weight: 600; }
+.days { font-size: .82rem; }
+.cl { padding: 2px 4px; margin: 0 -4px 4px; border-radius: 4px; }
+.kind { font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin-right: 4px; }
+.cl.st-soon { background: var(--soon-bg); }
+.cl.st-soon strong, .cl.st-soon .days { color: var(--soon); }
+.cl.st-open strong { color: var(--open); }
+.cl.st-closed { color: var(--muted); }
+td.call { min-width: 240px; }
+.crawl { font-size: .82rem; min-width: 190px; }
+.flag { background: var(--flag-bg); color: var(--flag); border-radius: 4px; padding: 0 4px; }
+.warn { color: var(--soon); }
+.cand { cursor: help; border-bottom: 1px dotted var(--muted); }
+.cand.ok::after { content: " ✓"; color: var(--open); }
+footer { margin-top: 40px; color: var(--muted); font-size: .85rem; max-width: 80ch; }
+</style>
+</head>
+<body>
+<main>
+<h1>Digital Education Venue Radar</h1>
+<p class="lead">Conferences on digital education, AI in education, computing education and the Scholarship of
+Teaching and Learning, with their calls, deadlines, organizers and rankings. Built 23.10.2026, crawled weekly.
+Deadlines due within 45 days are marked red. Each series shows its next edition that still has an open call.</p>
+<div class="filters" id="filters"><strong>Topics:</strong> <label><input type="checkbox" value="ai-in-education" checked> ai-in-education</label><label><input type="checkbox" value="ai-literacy" checked> ai-literacy</label><label><input type="checkbox" value="computing-education" checked> computing-education</label><label><input type="checkbox" value="digital-education" checked> digital-education</label><label><input type="checkbox" value="engineering-education" checked> engineering-education</label><label><input type="checkbox" value="learning-analytics" checked> learning-analytics</label><label><input type="checkbox" value="sotl" checked> sotl</label></div>
+<section><h2>Conferences in 2027</h2>
+    <h3>Europe</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="engineering-education digital-education">
+        <td><strong>EDUCON 2027</strong><div class="note">IEEE Global Engineering Education Conference</div><span class="chip">engineering-education</span><span class="chip">digital-education</span></td>
+        <td>IEEE Education Society</td>
+        <td class="rank">C</td>
+        <td>Timișoara, Romania</td>
+        <td class="nowrap">06.–09.04.2027</td>
+        <td class="call"><div class="cl st-soon"><span class="kind">papers</span> <strong>30.10.2026</strong> <span class="days" data-deadline="2026-10-30">in 7 days</span><div class="note">abstracts; preliminary papers 07.12.2026</div></div><div class="cl st-soon"><span class="kind">workshops</span> <strong>07.12.2026</strong> <span class="days" data-deadline="2026-12-07">in 45 days</span><div class="note">workshops, panels and posters</div></div><div class="cl st-closed"><span class="kind">special sessions</span> closed 08.10.2026</div></td>
+        <td class="crawl"><span class="cand ok" title="s &amp; Information Oct 08, 2026 Alternative Session Proposal Submission (Special Session) Oct 26, 2026 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission">30.10.2026 <span class="muted">near “special session”</span></span><br><span class="cand ok" title="6 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission of Proposals for Workshops, Panels, and Posters Jan 11, 2027 Paper Decision Notifications Feb 15,">07.12.2026 <span class="muted">near “abstract”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://educon-conference.org/2027">website</a></td>
+      </tr>
+      <tr data-topics="digital-education ai-literacy">
+        <td><strong>ITK 2027</strong><div class="note">Interaktiivinen tekniikka koulutuksessa (Interactive Technology in Education)</div><span class="chip">digital-education</span><span class="chip">ai-literacy</span></td>
+        <td>Suomen eOppimiskeskus (Finnish eLearning Centre)<div class="note">practitioner event, proceedings in Finnish</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>Tampere Hall, Tampere, Finland</td>
+        <td class="nowrap">21.–23.04.2027</td>
+        <td class="call"><div class="cl st-soon"><span class="kind">presentations</span> <strong>02.11.2026</strong> <span class="days" data-deadline="2026-11-02">in 10 days</span><div class="note">one call for ITK Forum, Arena, Workshop (hands-on) and Poster</div></div></td>
+        <td class="crawl"><span class="cand ok" title="Technology in Education Conference 2027 Tampere Hall Tampere, Finland, April 21-23, 2027 Conference web page https://itk-konferenssi.fi/en Submission deadline November 2, 2026 Topics: educational technology artificial intelligence in education ITK2027 – A New Contract for Learning 21–23 April 2027 | Tampere Hall, Tampere, Finland Cal">02.11.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://easychair.org/cfp/ITK2027">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>CSEDU 2027</strong><div class="note">International Conference on Computer Supported Education</div><span class="chip">digital-education</span></td>
+        <td>INSTICC (commercial organizer, SCITEPRESS proceedings)</td>
+        <td class="rank">B</td>
+        <td>Rome, Italy (unconfirmed)</td>
+        <td class="nowrap">April 2027</td>
+        <td class="call"><div class="cl st-soon"><span class="kind">papers</span> <strong>17.11.2026</strong> <span class="days" data-deadline="2026-11-17">in 25 days</span><div class="note">second round (position/regular papers) 21.12.2026</div></div></td>
+        <td class="crawl"><span class="cand ok" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Educa">17.11.2026 <span class="muted">near “paper submission”</span></span><br><span class="cand" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Education, is a yearly meeting place for presenting and di">21.12.2026 <span class="muted">near “paper submission”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://csedu.scitevents.org/">website</a></td>
+      </tr>
+      <tr data-topics="sotl">
+        <td><strong>EuroSoTL 2027</strong><div class="note">European Conference on the Scholarship of Teaching and Learning</div><span class="chip">sotl</span></td>
+        <td>European SoTL network, hosted by a university each time</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>London, UK</td>
+        <td class="nowrap">08.–11.06.2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">contributions</span> typically 15.12.2026 <span class="muted">(last: 15.12.2024)</span><div class="note">the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels</div></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en">previous edition</a></td>
+      </tr>
+      <tr data-topics="computing-education">
+        <td><strong>ITiCSE 2027</strong><div class="note">Innovation and Technology in Computer Science Education</div><span class="chip">computing-education</span></td>
+        <td>ACM SIGCSE</td>
+        <td class="rank">B</td>
+        <td>University of Glasgow, Scotland</td>
+        <td class="nowrap">12.–14.07.2027</td>
+        <td class="call"><div class="cl st-open"><span class="kind">papers</span> <strong>18.01.2027</strong> <span class="days" data-deadline="2027-01-18">in 87 days</span><div class="note">abstracts 11.01.2027; dates provisional</div></div><div class="cl st-expected"><span class="kind">working groups</span> typically 11.01.2027 <span class="muted">(last: 11.01.2026)</span><div class="note">2-page proposal by up to four leaders; groups meet 09–11.07.</div></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://iticse.acm.org/2027/">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>University:Future Festival 2027</strong><div class="note">University:Future Festival</div><span class="chip">digital-education</span></td>
+        <td>Hochschulforum Digitalisierung, StIL, Stifterverband<div class="note">practice festival, no proceedings</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>several German sites plus online</td>
+        <td class="nowrap">June 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 16.02.2027 <span class="muted">(last: 16.02.2026)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://festival.hfd.digital">website</a></td>
+      </tr>
+      <tr data-topics="digital-education sotl">
+        <td><strong>TURN 2027</strong><div class="note">TURN Conference</div><span class="chip">digital-education</span><span class="chip">sotl</span></td>
+        <td>Stiftung Innovation in der Hochschullehre (StIL)<div class="note">practice forum</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>not announced (2026 Bauhaus-Universität Weimar)</td>
+        <td class="nowrap">autumn 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 01.03.2027 <span class="muted">(last: 01.03.2026)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://sessionize.com/turn-conference-26">previous edition</a></td>
+      </tr>
+      <tr data-topics="digital-education computing-education">
+        <td><strong>DELFI 2027</strong><div class="note">Fachtagung Bildungstechnologien (with HDI when it runs)</div><span class="chip">digital-education</span><span class="chip">computing-education</span></td>
+        <td>GI, Fachgruppe Bildungstechnologien<div class="note">German national, proceedings in GI LNI</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>PH St. Gallen, Rorschach on Lake Constance, Switzerland</td>
+        <td class="nowrap">31.08.–02.09.2027</td>
+        <td class="call"><div class="cl st-open"><span class="kind">workshops</span> <strong>03.03.2027</strong> <span class="days" data-deadline="2027-03-03">in 131 days</span><div class="note">workshops and tutorials, notification 24.03.2027</div></div><div class="cl st-open"><span class="kind">abstracts</span> <strong>01.04.2027</strong> <span class="days" data-deadline="2027-04-01">in 160 days</span><div class="note">abstracts for short and long papers</div></div><div class="cl st-open"><span class="kind">papers</span> <strong>07.04.2027</strong> <span class="days" data-deadline="2027-04-07">in 166 days</span><div class="note">short and long papers, notification 05.05.2027</div></div><div class="cl st-open"><span class="kind">posters demos</span> <strong>19.05.2027</strong> <span class="days" data-deadline="2027-05-19">in 208 days</span><div class="note">notification 09.06.2027</div></div><div class="cl st-open"><span class="kind">artifacts</span> <strong>01.06.2027</strong> <span class="days" data-deadline="2027-06-01">in 221 days</span><div class="note">notification 30.06.2027</div></div></td>
+        <td class="crawl"><span class="cand ok" title="03.03.2027 Einreichung von Workshops / Tutorials">03.03.2027 <span class="muted">near “einreichung von workshops”</span></span><br><span class="cand ok" title="07.04.2027 Einreichung von Kurz- und Langbeiträgen">07.04.2027 <span class="muted">near “einreichung von kurz”</span></span><br><span class="cand ok" title="19.05.2027 Einreichung von Poster- und Demo-Beiträgen">19.05.2027 <span class="muted">near “einreichung von poster”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://delfi-tagung.de/2027/">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>EADTU I-HE 2027</strong><div class="note">Innovating Higher Education Conference</div><span class="chip">digital-education</span></td>
+        <td>EADTU (European distance and open universities)</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>not announced (2026 Open Universiteit, The Hague)</td>
+        <td class="nowrap">October 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">abstracts</span> typically 27.05.2027 <span class="muted">(last: 27.05.2026)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml">previous edition</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>OEB Global 2027</strong><div class="note">OEB Global (Online Educa Berlin)</div><span class="chip">digital-education</span></td>
+        <td>OEB / ICWE, conference with trade fair<div class="note">mixed academia and industry</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>Berlin, Germany</td>
+        <td class="nowrap">early December 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 31.05.2027 <span class="muted">(last: 31.05.2025)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://is.oeb.global/conference/submit-a-proposal">website</a></td>
+      </tr>
+      <tr data-topics="computing-education">
+        <td><strong>Koli Calling 2027</strong><div class="note">Koli Calling International Conference on Computing Education Research</div><span class="chip">computing-education</span></td>
+        <td>University of Eastern Finland, ACM proceedings</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>Koli, Finland</td>
+        <td class="nowrap">early November 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 12.07.2027 <span class="muted">(last: 12.07.2026)</span><div class="note">full and discussion papers; one pre-conference workshop</div></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.kolicalling.fi/">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>EDEN 2027</strong><div class="note">EDEN Digital Learning Europe Annual Conference</div><span class="chip">digital-education</span></td>
+        <td>EDEN Digital Learning Europe</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>Winterthur, Switzerland</td>
+        <td class="nowrap">04.–06.07.2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://eden-europe.eu/">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>EC-TEL 2027</strong><div class="note">European Conference on Technology Enhanced Learning</div><span class="chip">digital-education</span></td>
+        <td>EA-TEL, Springer LNCS</td>
+        <td class="rank">B</td>
+        <td>not announced (2026 Valencia)</td>
+        <td class="nowrap">mid-September 2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://ea-tel.eu/">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>GMW 2027</strong><div class="note">Jahrestagung der Gesellschaft für Medien in der Wissenschaft</div><span class="chip">digital-education</span></td>
+        <td>Gesellschaft für Medien in der Wissenschaft<div class="note">German-speaking society conference</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>not announced (2026 Hochschule Campus Wien)</td>
+        <td class="nowrap">September 2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="cand" title="rmation von Lehre und … Beitragsnavigation Ältere Beiträge Suchen nach: Neueste Beiträge Call for Papers “Mediendidaktik im Zeitalter Künstlicher Intelligenz” (15.11.2026) Souverän vernetzt – Hochschulen im digitalen Wandel 8.">15.11.2026 <span class="muted">near “call”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.gmw-online.de/category/gmw-jahrestagungen/">website</a></td>
+      </tr></tbody>
+    </table></div>
+    <h3>North America</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="sotl">
+        <td><strong>SoTL Commons 2027</strong><div class="note">SoTL Commons Conference</div><span class="chip">sotl</span></td>
+        <td>Georgia Southern University</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>Hyatt Regency Riverfront, Savannah, USA</td>
+        <td class="nowrap">03.–05.03.2027</td>
+        <td class="call"><div class="cl st-soon"><span class="kind">proposals</span> <strong>23.10.2026</strong> <span class="days" data-deadline="2026-10-23">in 0 days</span></div></td>
+        <td class="crawl"><span class="cand ok" title="Read More… Proposal Submissions Call for Proposals Opens : August 10, 2026 Proposal Submission Deadline: October 23, 2026 Notice of Proposal Acceptance: Notifications sent on December 7, 2026 Confirmation of Proposal Acceptance : January 15, 2027 To remain in the Conference Progra">23.10.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals">website</a></td>
+      </tr>
+      <tr data-topics="engineering-education computing-education">
+        <td><strong>FIE 2027</strong><div class="note">Frontiers in Education</div><span class="chip">engineering-education</span><span class="chip">computing-education</span></td>
+        <td>IEEE Education Society and ASEE</td>
+        <td class="rank">C</td>
+        <td>not announced, usually North America (2026 Paphos)</td>
+        <td class="nowrap">October 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">workshops special sessions</span> typically 23.02.2027 <span class="muted">(last: 23.02.2026)</span><div class="note">alternative sessions: workshops, special sessions, panels</div></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://fie-conference.org/2026">previous edition</a></td>
+      </tr>
+      <tr data-topics="computing-education ai-literacy">
+        <td><strong>SIGCITE 2027</strong><div class="note">ACM SIGCITE Conference (formerly SIGITE)</div><span class="chip">computing-education</span><span class="chip">ai-literacy</span></td>
+        <td>ACM SIGCITE</td>
+        <td class="rank">National: USA</td>
+        <td>not announced (2026 UNC Wilmington)</td>
+        <td class="nowrap">November 2027</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 02.08.2027 <span class="muted">(last: 02.08.2026)</span></div><div class="cl st-expected"><span class="kind">special sessions</span> typically 27.09.2027 <span class="muted">(last: 27.09.2026)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://easychair.org/cfp/SIGCITE-26">previous edition</a></td>
+      </tr></tbody>
+    </table></div>
+    <h3>Australia and Asia-Pacific</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="ai-in-education ai-literacy">
+        <td><strong>AIED 2027</strong><div class="note">International Conference on Artificial Intelligence in Education (with EDM and L@S)</div><span class="chip">ai-in-education</span><span class="chip">ai-literacy</span></td>
+        <td>International AIED Society, Springer LNCS</td>
+        <td class="rank">A</td>
+        <td>Adelaide Convention Centre, Australia</td>
+        <td class="nowrap">18.–23.07.2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://iaied.org/conferences">website</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>ICCE 2027</strong><div class="note">International Conference on Computers in Education</div><span class="chip">digital-education</span></td>
+        <td>Asia-Pacific Society for Computers in Education (APSCE)</td>
+        <td class="rank">C</td>
+        <td>not announced (2026 Christchurch)</td>
+        <td class="nowrap">late November 2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://apsce.net/events/icce-2026">previous edition</a></td>
+      </tr></tbody>
+    </table></div>
+    <h3>Online</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="sotl">
+        <td><strong>ISSOTL 2027</strong><div class="note">International Society for the Scholarship of Teaching and Learning Conference</div><span class="chip">sotl</span></td>
+        <td>ISSOTL</td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>virtual, the first online-only ISSOTL</td>
+        <td class="nowrap">late October 2027</td>
+        <td class="call"><span class="muted">no call known yet</span></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://issotl.com/">website</a></td>
+      </tr></tbody>
+    </table></div></section><section><h2>Conferences in 2028</h2>
+    <h3>Europe</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="sotl">
+        <td><strong>dghd 2028</strong><div class="note">dghd-Jahrestagung</div><span class="chip">sotl</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+        <td>Deutsche Gesellschaft für Hochschuldidaktik<div class="note">German-speaking society conference</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>not announced (2027: USTP St. Pölten, Austria)</td>
+        <td class="nowrap">February 2028</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">contributions</span> typically 15.08.2027 <span class="muted">(last: 15.08.2026)</span></div></td>
+        <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://dghd.ustp.at/">previous edition</a></td>
+      </tr>
+      <tr data-topics="digital-education">
+        <td><strong>LEARNTEC 2028</strong><div class="note">LEARNTEC Kongress</div><span class="chip">digital-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+        <td>Messe Karlsruhe<div class="note">trade fair with congress</div></td>
+        <td class="rank"><span class="muted">not listed</span></td>
+        <td>not announced (2027: Messe Karlsruhe, Germany)</td>
+        <td class="nowrap">May 2028</td>
+        <td class="call"><div class="cl st-unknown"><span class="kind">congress</span> date unknown</div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.learntec.de/">previous edition</a></td>
+      </tr></tbody>
+    </table></div>
+    <h3>North America</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="computing-education">
+        <td><strong>SIGCSE TS 2028</strong><div class="note">ACM SIGCSE Technical Symposium</div><span class="chip">computing-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+        <td>ACM SIGCSE</td>
+        <td class="rank">A</td>
+        <td>not announced (2027: SAFE Credit Union Convention Center, Sacramento, USA)</td>
+        <td class="nowrap">February 2028</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected"><span class="kind">special sessions</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected"><span class="kind">posters lightning talks</span> typically 30.09.2027 <span class="muted">(last: 30.09.2026)</span></div></td>
+        <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://sigcse-ts.acm.org/2027/">previous edition</a></td>
+      </tr></tbody>
+    </table></div>
+    <h3>South America</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <tbody>
+      <tr data-topics="learning-analytics">
+        <td><strong>LAK 2028</strong><div class="note">International Conference on Learning Analytics and Knowledge</div><span class="chip">learning-analytics</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+        <td>Society for Learning Analytics Research (SoLAR), ACM proceedings</td>
+        <td class="rank">A</td>
+        <td>not announced (2027: Recife, Brazil)</td>
+        <td class="nowrap">March 2028</td>
+        <td class="call"><div class="cl st-expected"><span class="kind">workshops</span> typically 21.09.2027 <span class="muted">(last: 21.09.2026)</span></div></td>
+        <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
+        <td><a href="https://www.solaresearch.org/events/lak/lak27/">previous edition</a></td>
+      </tr></tbody>
+    </table></div></section>
+<footer>
+<p><strong>Calls</strong> lists each call of the edition (workshops, papers, special sessions, ...). A bold date is confirmed
+on the official page. “Typically” is the previous cycle's deadline moved to this cycle.</p>
+<p><strong>ICORE</strong> (ICORE2026) rates the main paper track, A* &gt; A &gt; B &gt; C. A workshop at an A conference
+is not an A publication. Education and German-language venues are not part of ICORE, so “not listed” says nothing about quality there.</p>
+<p><strong>Crawler</strong> shows what the weekly crawl saw: whether the page changed, future dates near the call keywords
+(hover for context; ✓ means it matches the confirmed deadline), and whether the next edition's page is online. It never changes the confirmed data, that is edited in
+<code>registry.yaml</code>.</p>
+</footer>
+</main>
+<script>
+const boxes = document.querySelectorAll('#filters input');
+function apply() {
+  const on = new Set([...boxes].filter(b => b.checked).map(b => b.value));
+  document.querySelectorAll('tbody tr').forEach(tr => {
+    const t = tr.dataset.topics.split(' ');
+    tr.hidden = !t.some(x => on.has(x));
+  });
+}
+boxes.forEach(b => b.addEventListener('change', apply));
+// The page is rebuilt weekly; count the days from the reader's today, not the build day.
+const today = new Date(); today.setHours(0, 0, 0, 0);
+document.querySelectorAll('.days[data-deadline]').forEach(el => {
+  const d = new Date(el.dataset.deadline + 'T00:00:00');
+  const days = Math.round((d - today) / 86400000);
+  const line = el.closest('.cl');
+  if (days < 0) { el.textContent = 'passed'; line.className = 'cl st-closed'; }
+  else {
+    el.textContent = days === 0 ? 'today' : `in ${days} days`;
+    line.className = days <= 45 ? 'cl st-soon' : 'cl st-open';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "id": "turn",
+  "edition": 2027,
+  "url": "https://sessionize.com/turn-conference-26",
+  "checked": "2026-10-23T13:51:50+00:00",
+  "status": 200,
+  "final_url": "https://sessionize.com/turn-conference-26",
+  "sha256": "a62e4af62d81d241b3d808af2fe85a1a93a8cf494f7b03bf47a13b8e377aceb5",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:29:08+00:00",
+  "candidates": [],
+  "probes": [
+    {
+      "url": "https://sessionize.com/turn-conference-27",
+      "status": 404,
+      "final_url": "https://sessionize.com/turn-conference-27",
+      "exists": false
+    },
+    {
+      "url": "https://sessionize.com/turn-conference-28",
+      "status": 404,
+      "final_url": "https://sessionize.com/turn-conference-28",
+      "exists": false
+    }
+  ]
+}

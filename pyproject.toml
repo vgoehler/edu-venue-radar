@@ -1,0 +1,50 @@
+[project]
+name = "edu-venue-radar"
+version = "0.1.0"
+description = "Digital Education Venue Radar: registry, crawler and GitHub Pages site for education conferences, their calls, deadlines and ICORE ranks."
+authors = [{ name = "Volker Göhler", email = "volker.goehler@informatik.tu-freiberg.de" }]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "requests (>=2.31)",
+    "beautifulsoup4 (>=4.12)",
+    "ruamel.yaml (>=0.18)",
+]
+
+[project.scripts]
+edu-venue-radar = "edu_venue_radar.cli:main"
+
+[tool.poetry]
+packages = [{ include = "edu_venue_radar" }]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^6.0"
+ruff = "^0.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=edu_venue_radar --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+source = ["edu_venue_radar"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "C4", "PL"]
+
+[tool.ruff.lint.pylint]
+max-args = 6
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004"]
+# The page template carries long CSS and prose lines.
+"edu_venue_radar/site.py" = ["E501"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

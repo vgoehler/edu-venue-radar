@@ -1,0 +1,27 @@
+{
+  "id": "sigcite",
+  "edition": 2027,
+  "url": "https://easychair.org/cfp/SIGCITE-26",
+  "checked": "2026-10-23T13:52:05+00:00",
+  "status": 200,
+  "final_url": "https://easychair.org/cfp/SIGCITE-26",
+  "sha256": "917cdfb015fee53abfaf09b5ff7f974035e122b96593cb5ab0af04a58a1f6aa2",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:29:25+00:00",
+  "candidates": [],
+  "probes": [
+    {
+      "url": "https://easychair.org/cfp/SIGCITE-27",
+      "status": 404,
+      "final_url": "https://easychair.org/cfp/SIGCITE-27",
+      "exists": false
+    },
+    {
+      "url": "https://easychair.org/cfp/SIGCITE-28",
+      "status": 404,
+      "final_url": "https://easychair.org/cfp/SIGCITE-28",
+      "exists": false
+    }
+  ]
+}

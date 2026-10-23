@@ -1,0 +1,39 @@
+name: crawl and build
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"  # Mondays 05:17 UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [registry.yaml, edu_venue_radar/**]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install .
+      # A failing ranking portal must not stop the crawl.
+      - run: edu-venue-radar --root . icore || echo "ICORE lookup failed, keeping the last ranks"
+        if: github.event_name != 'push'
+      - run: edu-venue-radar --root . crawl
+        if: github.event_name != 'push'
+      - run: edu-venue-radar --root . build
+      - name: commit
+        run: |
+          git config user.name "edu-venue-radar bot"
+          git config user.email "edu-venue-radar@users.noreply.github.com"
+          git add data docs
+          git diff --cached --quiet || git commit -m "weekly crawl $(date -u +%F)"
+          git push

@@ -1,0 +1,13 @@
+{
+  "id": "oeb",
+  "edition": 2027,
+  "url": "https://is.oeb.global/conference/submit-a-proposal",
+  "checked": "2026-10-23T13:51:59+00:00",
+  "status": 200,
+  "final_url": "https://is.oeb.global/conference/submit-a-proposal",
+  "sha256": "51fe7f731c688738107a1a506fdd89beeb0f7ab2e1545f5a4fa671b80f0cbb31",
+  "sha256_of": "date-lines",
+  "changed_on": null,
+  "first_seen": "2026-10-23T10:29:18+00:00",
+  "candidates": []
+}
