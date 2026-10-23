@@ -33,8 +33,11 @@ LANGUAGE_NAMES = {
 }
 # One language name as a whole word: "Deutsch" yes, "Deutschland" no.
 _NAME = r"\b(?:" + "|".join(sorted(LANGUAGE_NAMES, key=len, reverse=True)) + r")\b"
-# "Spanish, or Portuguese", "Deutsch oder Englisch", "German and English"
-_NAMES = rf"{_NAME}(?:\s*,?\s*(?:or|and|oder|und|/|,)\s*{_NAME})*"
+# "Spanish, or Portuguese", "Deutsch oder Englisch", "German and English". Each separator can
+# be read only one way and the list is capped, so a long hostile run of names cannot make the
+# patterns backtrack exponentially.
+_SEP = r"(?:\s*[,/]\s*|\s+)(?:(?:or|and|oder|und)\s+)?"
+_NAMES = rf"{_NAME}(?:{_SEP}{_NAME}){{0,6}}"
 
 STATEMENTS = [
     # papers must be submitted in English; delivered in English, Spanish, or Portuguese

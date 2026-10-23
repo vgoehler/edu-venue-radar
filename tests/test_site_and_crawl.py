@@ -36,9 +36,20 @@ REG = {
 
 
 class FakeResponse:
-    def __init__(self, status, text, url):
+    def __init__(self, status, text, url, headers=None):
         self.status_code, self.text, self.url = status, text, url
-        self.headers = {"content-type": "text/html"}
+        self.headers = {"content-type": "text/html", **(headers or {})}
+        self.encoding = "utf-8"
+
+    def iter_content(self, size):
+        data = self.text.encode()
+        return (data[i : i + size] for i in range(0, len(data), size))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
 
 
 class FakeSession:
@@ -149,6 +160,18 @@ def test_crawl_reads_the_call_page_and_stands_in_for_a_missing_edition_page(tmp_
     assert res["language_hints"][0]["languages"] == ["en"]
 
 
+def test_fetch_refuses_pages_over_the_size_limit(monkeypatch):
+    monkeypatch.setattr(crawl, "MAX_BYTES", 100)
+    page = crawl.fetch(FakeSession({"https://x.org/": (200, "<p>" + "x" * 200 + "</p>")}), "https://x.org/")
+    assert (page.text, page.error) == (None, "page too large or too slow")
+
+    class Announced(FakeSession):
+        def get(self, url, **_):
+            return FakeResponse(200, "<p>small</p>", url, {"content-length": "5000000"})
+
+    assert crawl.fetch(Announced({}), "https://x.org/").error == "page too large or too slow"
+
+
 class BrokenSession(FakeSession):
     def get(self, url, **_):
         raise crawl.requests.ConnectionError(url)
@@ -210,3 +233,9 @@ def test_open_calls_count_for_every_category():
     assert site.categories("contributions") == list(site.CALL_CATEGORIES)
     assert site.categories("workshops-special-sessions") == ["workshops", "special"]
     assert site.categories("artifacts") == []
+
+
+def test_row_drops_links_that_are_not_web_urls():
+    series = {**REG["series"][1], "editions": {2027: {"url": "javascript:alert(1)", "call_url": "data:text/html,x"}}}
+    _, html = site.row(series, edition(series, 2027), None, None, date(2026, 10, 23))
+    assert "javascript:" not in html and "data:text" not in html

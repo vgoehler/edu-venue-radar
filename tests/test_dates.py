@@ -1,3 +1,4 @@
+import time
 from datetime import date
 
 from edu_venue_radar.dates import date_lines, deadline_candidates, find_dates, month_of
@@ -115,3 +116,10 @@ def test_candidates_stop_at_the_conference_start():
 def test_date_lines_keep_only_sentences_with_dates():
     text = "Latest news: our new podcast is out. Submission deadline: 2 November 2026. Notification 7 December 2026."
     assert date_lines(text) == ["Notification 7 December 2026.", "Submission deadline: 2 November 2026."]
+
+
+def test_many_dates_stay_linear():
+    text = " ".join(f"Deadline {d % 28 + 1}.{d % 12 + 1}.2027 text." for d in range(20000))
+    started = time.monotonic()
+    deadline_candidates(text, ["deadline"], date(2026, 10, 23))
+    assert time.monotonic() - started < 3

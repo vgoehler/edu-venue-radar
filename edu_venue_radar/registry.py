@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
-from typing import cast
+from typing import TypeGuard, cast
 
 from ruamel.yaml import YAML
 
@@ -312,9 +312,23 @@ def _check_types(where: str, raw: SeriesData | EditionData | CallData) -> list[s
     return problems
 
 
+def is_web_url(value: object) -> TypeGuard[str]:
+    """Only http(s) links reach the page; javascript: or data: URLs never do."""
+    return isinstance(value, str) and value.lower().startswith(("https://", "http://"))
+
+
+def _check_urls(where: str, raw: SeriesData | EditionData, keys: tuple[str, ...]) -> list[str]:
+    return [
+        f"{where}: {key} must start with https:// or http://, not {raw.get(key)!r}"
+        for key in keys
+        if raw.get(key) is not None and not is_web_url(raw.get(key))
+    ]
+
+
 def _check_edition(where: str, ed: EditionData) -> list[str]:
     problems = [f"{where}: unknown field {k}" for k in sorted(set(ed) - EDITION_KEYS)]
     problems += _check_types(where, ed) + _check_dates(where, ed, ("start", "end"))
+    problems += _check_urls(where, ed, ("url", "call_url"))
     if ed.get("call_url") and ed.get("call_url") == ed.get("url"):
         problems.append(f"{where}: call_url is the same as url, leave it out")
     for kind, raw_call in (ed.get("calls") or {}).items():
@@ -343,6 +357,7 @@ def _check_series(sid: str, s: SeriesData) -> list[str]:
     problems = [f"{sid}: missing field {k}" for k in sorted(SERIES_REQUIRED - set(s))]
     problems += [f"{sid}: unknown field {k}" for k in sorted(set(s) - SERIES_KEYS)]
     problems += _check_types(sid, s)
+    problems += _check_urls(sid, s, ("url_pattern", "deadlines_pattern"))
     if "continent" in s and s["continent"] not in CONTINENTS:
         problems.append(f"{sid}: unknown continent {s['continent']!r}")
     if s.get("layout", "prose") not in LAYOUTS:

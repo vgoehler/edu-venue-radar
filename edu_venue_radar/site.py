@@ -6,7 +6,7 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from .registry import CONTINENTS, STATUS_ORDER, Call, Edition, current_edition
+from .registry import CONTINENTS, STATUS_ORDER, Call, Edition, current_edition, is_web_url
 from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
 from .worldmap import world_map
 
@@ -144,7 +144,7 @@ def crawl_cell(crawl: CrawlRecord | None, ed: Edition, series: SeriesData) -> st
         )
     parts += language_flags(crawl, series)
     for p in crawl.get("probes", []):
-        if p.get("exists"):
+        if p.get("exists") and is_web_url(p["url"]):
             parts.append(f'<a class="flag" href="{escape(p["url"])}">page up: {escape(p["url"].split("//", 1)[-1])}</a>')
     if checked:
         parts.append(f'<span class="muted">checked {fmt(date.fromisoformat(checked))}</span>')
@@ -163,8 +163,8 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
     else:
         rank_html = '<span class="muted">not listed</span>'
     link_label = "previous edition" if ed.url_is_fallback else "website"
-    link = f'<a href="{escape(ed.url)}">{link_label}</a>' if ed.url else ""
-    if ed.call_url:
+    link = f'<a href="{escape(ed.url)}">{link_label}</a>' if is_web_url(ed.url) else ""
+    if is_web_url(ed.call_url):
         link += f'<br><a href="{escape(ed.call_url)}">call</a>'
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
     data = " ".join(f'data-{k}="{v}"' for k, v in sort_keys(ed, today).items())

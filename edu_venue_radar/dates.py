@@ -172,8 +172,11 @@ def _own_label(text: str, dates: list[Found], i: int, lo: int, hi: int) -> tuple
     "date, label, date, label" list and the label is what comes after.
     """
     f = dates[i]
-    before_lo = max([lo] + [d.end for d in dates[:i] if d.end <= f.start])
-    after_hi = min([hi] + [d.start for d in dates[i + 1 :] if d.start >= f.end])
+    # The neighbours are next to i in the sorted list; looking only there keeps a page with
+    # thousands of dates linear instead of quadratic.
+    prev = next((dates[j].end for j in range(i - 1, -1, -1) if dates[j].end <= f.start), lo)
+    nxt = next((dates[j].start for j in range(i + 1, len(dates)) if dates[j].start >= f.end), hi)
+    before_lo, after_hi = max(lo, prev), min(hi, nxt)
     if ":" in text[before_lo : f.start] or after_hi == hi:
         return before_lo, f.start
     return f.end, after_hi

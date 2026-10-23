@@ -23,6 +23,10 @@ from .schema import CandidateRecord, CrawlRecord, PageRecord, ProbeRecord, Regis
 
 USER_AGENT = "edu-venue-radar/0.1 (+https://github.com/vgoehler/edu-venue-radar; conference deadline watcher)"
 TIMEOUT = 30
+# Limits per page, so a huge or trickling response cannot stall the weekly run.
+MAX_BYTES = 2_000_000
+MAX_SECONDS = 60
+CHUNK = 65_536
 PAUSE = 1.0
 MAX_CANDIDATES = 5
 HTTP_OK = 200
@@ -51,14 +55,39 @@ def page_text(html: str) -> str:
     return " ".join(soup.get_text(" ").split())
 
 
+def _body(r: requests.Response) -> str | None:
+    """The response text, or None when it is larger than MAX_BYTES or takes longer than MAX_SECONDS."""
+    if int(r.headers.get("content-length") or 0) > MAX_BYTES:
+        return None
+    started, size, chunks = time.monotonic(), 0, []
+    for chunk in r.iter_content(CHUNK):
+        size += len(chunk)
+        if size > MAX_BYTES or time.monotonic() - started > MAX_SECONDS:
+            return None
+        chunks.append(chunk)
+    data = b"".join(chunks)
+    # requests assumes ISO-8859-1 for text/html without a charset; most such pages are UTF-8.
+    if "charset" in r.headers.get("content-type", "").lower() and r.encoding:
+        return data.decode(r.encoding, errors="replace")
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data.decode("cp1252", errors="replace")
+
+
 def fetch(session: requests.Session, url: str) -> Fetched:
     try:
-        r = session.get(url, timeout=TIMEOUT, allow_redirects=True)
+        with session.get(url, timeout=TIMEOUT, allow_redirects=True, stream=True) as r:
+            page = Fetched(url, r.status_code, r.url)
+            if r.status_code != HTTP_OK or "html" not in r.headers.get("content-type", "html"):
+                return page
+            body = _body(r)
     except requests.RequestException as exc:
         return Fetched(url, final_url=url, error=exc.__class__.__name__)
-    page = Fetched(url, r.status_code, r.url)
-    if r.status_code == HTTP_OK and "html" in r.headers.get("content-type", "html"):
-        page.text = page_text(r.text)
+    if body is None:
+        page.error = "page too large or too slow"
+    else:
+        page.text = page_text(body)
     return page
 
 

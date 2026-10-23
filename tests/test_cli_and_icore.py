@@ -197,3 +197,16 @@ def test_crawl_icore_and_update_commands(root, monkeypatch, capsys):
     assert "x             200" in out
     assert "x             A" in out
     assert out.strip().endswith("index.html")
+
+
+def test_validate_allows_only_web_urls():
+    bad = {
+        "id": "j",
+        "name": "J",
+        "continent": "Online",
+        "url_pattern": "javascript:alert({year})",
+        "editions": {2027: {"url": "https://j.org", "call_url": "javascript:alert(1)"}},
+    }
+    problems = registry.validate({"series": [bad]})
+    assert "j: url_pattern must start with https:// or http://, not 'javascript:alert({year})'" in problems
+    assert "j 2027: call_url must start with https:// or http://, not 'javascript:alert(1)'" in problems

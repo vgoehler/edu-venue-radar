@@ -1,3 +1,5 @@
+import time
+
 from edu_venue_radar import registry, site
 from edu_venue_radar.languages import codes, language_hints
 
@@ -78,3 +80,10 @@ def test_language_flags_only_for_what_the_registry_lacks():
     flags = site.language_flags(crawl, series)
     assert len(flags) == 2
     assert "language? de (statement)" in flags[0] and "language? de (publisher)" in flags[1]
+
+
+def test_long_hostile_name_lists_do_not_backtrack():
+    # Before the fix this took hours: every split of the spaces between the names was tried.
+    started = time.monotonic()
+    assert langs("in English" + " or English" * 200 + " x") == []
+    assert time.monotonic() - started < 1
