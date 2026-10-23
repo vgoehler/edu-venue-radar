@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .registry import CONTINENTS, STATUS_ORDER, Call, Edition, current_edition
 from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
+from .worldmap import world_map
 
 SOON_DAYS = 45
 
@@ -149,6 +150,7 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
     groups: dict[int, dict[str, list[tuple[date, str]]]] = defaultdict(lambda: defaultdict(list))
     topics: set[str] = set()
     languages: set[str] = set()
+    counts: dict[str, int] = defaultdict(int)
     for series in registry["series"]:
         ed = current_edition(series, today)
         crawl_file = crawl_dir / f"{series['id']}.json"
@@ -158,6 +160,7 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
         groups[ed.year][series.get("continent", "Online")].append(row(series, ed, crawl, ranks.get(series["id"]), today))
         topics.update(series.get("topics", []))
         languages.update(series.get("languages", []))
+        counts[series.get("continent", "Online")] += 1
 
     sections = []
     for year in sorted(groups):
@@ -165,12 +168,14 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
         for continent in sorted(groups[year], key=lambda c: CONTINENTS.index(c) if c in CONTINENTS else 99):
             rows = "".join(h for _, h in sorted(groups[year][continent], key=lambda r: r[0]))
             blocks.append(f"""
+    <div class="cblock" data-continent="{escape(continent)}">
     <h3>{escape(continent)}</h3>
     <div class="scroll"><table>
       <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
       <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>{rows}</tbody>
-    </table></div>""")
+    </table></div>
+    </div>""")
         sections.append(f"<section><h2>Conferences in {year}</h2>{''.join(blocks)}</section>")
 
     filters = "".join(f'<label><input type="checkbox" value="{escape(t)}" checked> {escape(t)}</label>' for t in sorted(topics))
@@ -182,6 +187,8 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
         today=fmt(today),
         sections="".join(sections),
         filters=filters,
+        worldmap=world_map(counts),
+        online=counts.get("Online", 0),
         language_filters=language_filters,
         icore_source=source,
         soon=SOON_DAYS,
@@ -202,13 +209,13 @@ TEMPLATE = """<!doctype html>
 :root {{
   --bg: #fbfaf7; --fg: #1f2328; --muted: #6a6f76; --line: #e3e0d8; --head: #f1eee6;
   --accent: #2f5d8a; --soon: #b3261e; --soon-bg: #fdecea; --open: #1e6b3a; --flag: #8a5a00; --flag-bg: #fff4d6;
-  --chip: #e8eef5;
+  --chip: #e8eef5; --land: #c9d6e3; --land-hover: #a9bfd6; --land-on: #2f6aa3;
 }}
 @media (prefers-color-scheme: dark) {{
   :root:not([data-theme="light"]) {{
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
   }}
 }}
 :root[data-theme="dark"] {{
@@ -233,6 +240,21 @@ th {{ background: var(--head); font-size: .85rem; font-weight: 600; }}
 tr:last-child td {{ border-bottom: 0; }}
 .note {{ color: var(--muted); font-size: .82rem; margin-top: 2px; }}
 .muted {{ color: var(--muted); }}
+.mapbox {{ display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin: 18px 0 6px; }}
+.worldmap {{ width: 100%; max-width: 520px; height: auto; }}
+.region path {{ fill: var(--land); stroke: var(--bg); stroke-width: .4; transition: fill .15s; }}
+.region {{ cursor: pointer; outline: none; }}
+.region text {{ font-size: 9px; font-weight: 600; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; pointer-events: none; }}
+.region:hover path, .region:focus-visible path {{ fill: var(--land-hover); }}
+.region.empty {{ cursor: default; }}
+.region.empty path {{ fill: var(--line); }}
+.worldmap.picking .region path {{ fill: var(--line); }}
+.worldmap .region[aria-pressed="true"] path {{ fill: var(--land-on); }}
+.worldmap .region[aria-pressed="true"] text {{ fill: #fff; }}
+.mapside {{ display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; }}
+.mapside button {{ font: inherit; font-size: .88rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--head); color: var(--fg); cursor: pointer; }}
+.mapside button[aria-pressed="true"] {{ background: var(--land-on); border-color: var(--land-on); color: #fff; }}
 .lang {{ display: inline-block; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin: 0 4px 2px 0; font-size: .78rem; font-weight: 600; }}
 .lang.inferred {{ font-weight: 400; border-style: dashed; cursor: help; }}
 .chip {{ display: inline-block; background: var(--chip); border-radius: 10px; padding: 0 7px; margin: 4px 4px 0 0; font-size: .75rem; }}
@@ -260,6 +282,10 @@ footer {{ margin-top: 40px; color: var(--muted); font-size: .85rem; max-width: 8
 <p class="lead">Conferences on digital education, AI in education, computing education and the Scholarship of
 Teaching and Learning, with their calls, deadlines, organizers and rankings. Built {today}, crawled weekly.
 Deadlines due within {soon} days are marked red. Each series shows its next edition that still has an open call.</p>
+<div class="mapbox">{worldmap}
+<div class="mapside"><button type="button" class="region-btn" data-continent="Online" aria-pressed="false">Online ({online})</button>
+<button type="button" id="all-continents">All continents</button>
+<p class="note">Click a continent to show only its venues; click more to add them.</p></div></div>
 <div class="filters" id="filters"><strong>Topics:</strong> {filters}</div>
 <div class="filters" id="langs"><strong>Submission in:</strong> {language_filters}</div>
 {sections}
@@ -279,13 +305,32 @@ publisher the registry does not list (hover for the phrase). It never changes th
 </main>
 <script>
 const checked = sel => new Set([...document.querySelectorAll(sel + ' input')].filter(b => b.checked).map(b => b.value));
+// Continents picked on the map; empty means all.
+const picked = new Set();
+const toggles = document.querySelectorAll('.region, .region-btn');
 function apply() {{
   const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {{
     const t = tr.dataset.topics.split(' '), l = tr.dataset.langs.split(' ');
     tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x));
   }});
+  document.querySelectorAll('.cblock').forEach(b => {{
+    const shown = picked.size === 0 || picked.has(b.dataset.continent);
+    b.hidden = !shown || !b.querySelector('tbody tr:not([hidden])');
+  }});
+  document.querySelectorAll('main section').forEach(s => {{ s.hidden = !s.querySelector('.cblock:not([hidden])'); }});
+  toggles.forEach(el => el.setAttribute('aria-pressed', picked.has(el.dataset.continent)));
+  document.querySelector('.worldmap').classList.toggle('picking', picked.size > 0);
 }}
+function toggle(name) {{ picked.has(name) ? picked.delete(name) : picked.add(name); apply(); }}
+toggles.forEach(el => {{
+  if (el.classList.contains('empty')) return;
+  el.addEventListener('click', () => toggle(el.dataset.continent));
+  el.addEventListener('keydown', e => {{
+    if (e.key === 'Enter' || e.key === ' ') {{ e.preventDefault(); toggle(el.dataset.continent); }}
+  }});
+}});
+document.getElementById('all-continents').addEventListener('click', () => {{ picked.clear(); apply(); }});
 document.querySelectorAll('.filters input').forEach(b => b.addEventListener('change', apply));
 // The page is rebuilt weekly; count the days from the reader's today, not the build day.
 const today = new Date(); today.setHours(0, 0, 0, 0);
