@@ -9,19 +9,19 @@
 :root {
   --bg: #fbfaf7; --fg: #1f2328; --muted: #6a6f76; --line: #e3e0d8; --head: #f1eee6;
   --accent: #2f5d8a; --soon: #b3261e; --soon-bg: #fdecea; --open: #1e6b3a; --flag: #8a5a00; --flag-bg: #fff4d6;
-  --chip: #e8eef5; --land: #c9d6e3; --land-hover: #a9bfd6; --land-on: #2f6aa3;
+  --chip: #e8eef5; --land: #c9d6e3; --land-hover: #a9bfd6; --land-on: #2f6aa3; --land-on-hover: #24527f;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3; --land-on-hover: #24527f;
   }
 }
 :root[data-theme="dark"] {
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3; --land-on-hover: #24527f;
 }
 * { box-sizing: border-box; }
 body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -60,6 +60,7 @@ tbody tr td:first-child::before { content: ""; position: absolute; left: 0; top:
 .worldmap.picking .region path { fill: var(--line); }
 .worldmap .region:not(.empty):hover path, .worldmap .region:not(.empty):focus-visible path { fill: var(--land-hover); }
 .worldmap .region[aria-pressed="true"] path { fill: var(--land-on); }
+.worldmap .region[aria-pressed="true"]:hover path, .worldmap .region[aria-pressed="true"]:focus-visible path { fill: var(--land-on-hover); }
 .worldmap .region:focus-visible path { stroke: var(--fg); stroke-width: 1.2; }
 .worldmap .region[aria-pressed="true"] text { fill: #fff; }
 .mapside { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; }

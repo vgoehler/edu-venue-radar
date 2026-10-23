@@ -5,8 +5,11 @@ data/crawl/, and the site shows what it saw next to the confirmed facts, so a pe
 decides what goes into registry.yaml.
 """
 
+import codecs
 import hashlib
 import json
+import sys
+import threading
 import time
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -23,21 +26,21 @@ from .schema import CandidateRecord, CrawlRecord, PageRecord, ProbeRecord, Regis
 
 USER_AGENT = "edu-venue-radar/0.1 (+https://github.com/vgoehler/edu-venue-radar; conference deadline watcher)"
 TIMEOUT = 30
-# Limits per page, so a huge or trickling response cannot stall the weekly run.
+# Limits per page, so a huge or trickling response cannot stall the weekly run. MAX_SECONDS is
+# enforced by a watchdog that closes the connection, so it holds even while a read blocks.
 MAX_BYTES = 2_000_000
 MAX_SECONDS = 60
 CHUNK = 65_536
 PAUSE = 1.0
 MAX_CANDIDATES = 5
 HTTP_OK = 200
-# What `sha256` was taken over; a stored hash of another kind is a baseline, not a change.
-HASH_OF = "date-lines-per-page"
+# What the page hashes were taken over; a stored hash of another kind is a baseline, not a change.
+HASH_OF = "date-lines-by-page"
 # Kept from the previous run when the page cannot be read this time.
-CarriedKey = Literal["sha256", "sha256_of", "hashed_pages", "changed_on", "first_seen", "candidates", "language_hints"]
+CarriedKey = Literal["sha256_of", "page_hashes", "changed_on", "first_seen", "candidates", "language_hints"]
 CARRIED_OVER: tuple[CarriedKey, ...] = (
-    "sha256",
     "sha256_of",
-    "hashed_pages",
+    "page_hashes",
     "changed_on",
     "first_seen",
     "candidates",
@@ -63,24 +66,51 @@ def page_text(html: str) -> str:
     return " ".join(soup.get_text(" ").split())
 
 
-def _body(r: requests.Response) -> str | None:
-    """The response text, or None when it is larger than MAX_BYTES or takes longer than MAX_SECONDS."""
-    if int(r.headers.get("content-length") or 0) > MAX_BYTES:
-        return None
-    started, size, chunks = time.monotonic(), 0, []
-    for chunk in r.iter_content(CHUNK):
-        size += len(chunk)
-        if size > MAX_BYTES or time.monotonic() - started > MAX_SECONDS:
-            return None
-        chunks.append(chunk)
-    data = b"".join(chunks)
-    # requests assumes ISO-8859-1 for text/html without a charset; most such pages are UTF-8.
-    if "charset" in r.headers.get("content-type", "").lower() and r.encoding:
-        return data.decode(r.encoding, errors="replace")
+def _decode(data: bytes, headers: dict[str, str] | requests.structures.CaseInsensitiveDict[str], encoding: str | None) -> str:
+    """Decode with the declared charset if Python knows it, else UTF-8, else cp1252.
+
+    requests assumes ISO-8859-1 for text/html without a charset, but most such pages are UTF-8;
+    browsers accept charset names Python does not know (x-user-defined), so those fall back too.
+    """
+    if "charset" in headers.get("content-type", "").lower() and encoding:
+        try:
+            return data.decode(codecs.lookup(encoding).name, errors="replace")
+        except LookupError:
+            pass
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError:
         return data.decode("cp1252", errors="replace")
+
+
+def read_body(r: requests.Response) -> str | None:
+    """The response text, or None when it is larger than MAX_BYTES or takes longer than MAX_SECONDS."""
+    announced = r.headers.get("content-length", "").strip()
+    if announced.isdigit() and int(announced) > MAX_BYTES:
+        return None
+    expired = threading.Event()
+
+    def stop() -> None:
+        expired.set()
+        r.close()
+
+    watchdog = threading.Timer(MAX_SECONDS, stop)
+    watchdog.start()
+    size, chunks = 0, []
+    try:
+        for chunk in r.iter_content(CHUNK):
+            size += len(chunk)
+            if size > MAX_BYTES or expired.is_set():
+                return None
+            chunks.append(chunk)
+    except Exception:
+        # Closing the connection from the watchdog breaks the blocked read in one of several ways.
+        if expired.is_set():
+            return None
+        raise
+    finally:
+        watchdog.cancel()
+    return _decode(b"".join(chunks), r.headers, r.encoding)
 
 
 def fetch(session: requests.Session, url: str) -> Fetched:
@@ -89,7 +119,7 @@ def fetch(session: requests.Session, url: str) -> Fetched:
             page = Fetched(url, r.status_code, r.url)
             if r.status_code != HTTP_OK or "html" not in r.headers.get("content-type", "html"):
                 return page
-            body = _body(r)
+            body = read_body(r)
     except requests.RequestException as exc:
         return Fetched(url, final_url=url, error=exc.__class__.__name__)
     if body is None:
@@ -103,18 +133,13 @@ def probe(session: requests.Session, url: str) -> ProbeRecord:
     """Does an edition page exist yet? A redirect to somewhere else counts as no."""
     page = fetch(session, url)
     final = page.final_url or url
-    exists = page.status == HTTP_OK and page.text is not None and final.rstrip("/") == url.rstrip("/")
+    exists = page.status == HTTP_OK and final.rstrip("/") == url.rstrip("/")
     return {"url": url, "status": page.status, "final_url": final, "exists": exists}
 
 
-def page_digest(texts: dict[str, str]) -> str:
-    """Hash of the date-bearing sentences of each page, so rotating teasers without dates do not count as a change.
-
-    Each page is hashed on its own and under its URL, so text moving between pages or a page
-    being added does not look like the same page changing.
-    """
-    parts = [f"{url}\n" + "\n".join(date_lines(text)) for url, text in sorted(texts.items())]
-    return hashlib.sha256("\n\n".join(parts).encode()).hexdigest()
+def page_digest(text: str) -> str:
+    """Hash of the date-bearing sentences only, so rotating teasers without dates do not count as a change."""
+    return hashlib.sha256("\n".join(date_lines(text)).encode()).hexdigest()
 
 
 def conference_start(ed: Edition) -> date | None:
@@ -154,24 +179,30 @@ def _read_edition(session: requests.Session, series: SeriesData, ed: Edition) ->
         extras.append(("call_url", ed.call_url))
     for key, url in extras:
         extra = fetch(session, url)
-        pages.extras[key] = {"url": extra.url, "status": extra.status}
-        if extra.text:
+        record: PageRecord = {"url": extra.url, "status": extra.status}
+        if extra.text is None:
+            record["error"] = extra.error or f"HTTP {extra.status}"
+        else:
             pages.texts[url] = extra.text
+        pages.extras[key] = record
     return pages
 
 
 def _record_change(result: CrawlRecord, previous: CrawlRecord, texts: dict[str, str]) -> None:
-    """sha256, changed_on and first_seen against the last run.
+    """page_hashes, changed_on and first_seen against the last run.
 
-    A new edition URL starts over. When the set of readable pages differs from the last run
-    (a page was down, or a call page was added), the hash is a new baseline, not a change.
+    Each page has its own hash, and only pages read in both runs are compared: a page that was
+    down or is new is a baseline, and a flickering call page still shows its real changes.
+    A new edition URL starts over.
     """
-    digest, hashed = page_digest(texts), sorted(texts)
+    hashes = {url: page_digest(text) for url, text in sorted(texts.items())}
     same_page = previous.get("url") == result["url"]
-    comparable = previous.get("sha256_of") == HASH_OF and previous.get("hashed_pages") == hashed
-    changed = same_page and comparable and previous.get("sha256") not in (None, digest)
+    before = previous.get("page_hashes", {}) if previous.get("sha256_of") == HASH_OF else {}
+    changed = same_page and any(url in before and before[url] != h for url, h in hashes.items())
     now = result["checked"]
-    result["sha256"], result["sha256_of"], result["hashed_pages"] = digest, HASH_OF, hashed
+    # Keep the last hash of a page that is down this time, so it is compared when it is back.
+    result["page_hashes"] = {**before, **hashes} if same_page else hashes
+    result["sha256_of"] = HASH_OF
     result["changed_on"] = now if changed else (previous.get("changed_on") if same_page else None)
     result["first_seen"] = (previous.get("first_seen") if same_page else None) or now
 
@@ -232,6 +263,9 @@ def crawl(registry: RegistryData, state_dir: Path, today: date, only: set[str] |
     for series in registry["series"]:
         if only and series["id"] not in only:
             continue
-        results.append(crawl_series(session, series, today, state_dir))
+        try:
+            results.append(crawl_series(session, series, today, state_dir))
+        except Exception as exc:  # one broken site must not stop the weekly run
+            print(f"{series['id']}: crawl failed: {exc!r}", file=sys.stderr)
         time.sleep(PAUSE)
     return results

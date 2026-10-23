@@ -2,14 +2,13 @@
   "id": "dghd",
   "edition": 2028,
   "url": "https://dghd.ustp.at/",
-  "checked": "2026-10-23T19:38:43+00:00",
+  "checked": "2026-10-23T20:06:55+00:00",
   "status": 200,
   "final_url": "https://dghd.ustp.at/",
-  "sha256": "d4fe35cb5bf6422739bf3fcd91549cd8501e2f8c5d2ec74e50384b59ec6c4e64",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://dghd.ustp.at/"
-  ],
+  "page_hashes": {
+    "https://dghd.ustp.at/": "6d6b9e3c16d77ab73095733ce031f7c5c5b05c3246596db01b67019c773d844d"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": "2026-10-23T13:41:11+00:00",
   "first_seen": "2026-10-23T10:29:20+00:00",
   "candidates": [],

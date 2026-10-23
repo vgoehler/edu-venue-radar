@@ -10,6 +10,7 @@ REGISTRY = """series:
     name: X
     icore: XCONF
     continent: Europe
+    topics: [sotl]
     languages: [de, en]
     language_source: stated
     url_pattern: https://x.org/{year}/
@@ -86,6 +87,16 @@ ROW = "<tr><td>X Conference</td><td>{acr}</td><td>ICORE2026</td><td>{rank}</td><
 class FakeResponse:
     def __init__(self, status, text):
         self.status_code, self.text = status, text
+        self.headers, self.encoding = {"content-type": "text/html; charset=utf-8"}, "utf-8"
+
+    def iter_content(self, size):
+        yield self.text.encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
 
     def raise_for_status(self):
         if self.status_code >= 400:  # noqa: PLR2004

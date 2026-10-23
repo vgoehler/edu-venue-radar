@@ -2,14 +2,13 @@
   "id": "eurosotl",
   "edition": 2027,
   "url": "https://eurosotl.org/?p=2140",
-  "checked": "2026-10-23T19:45:10+00:00",
+  "checked": "2026-10-23T20:06:33+00:00",
   "status": 200,
   "final_url": "https://eurosotl.org/?p=2140",
-  "sha256": "2bd5342a191faee7b75e9904474c907eca85e192a8061942d21020fef5d67505",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://eurosotl.org/?p=2140"
-  ],
+  "page_hashes": {
+    "https://eurosotl.org/?p=2140": "4cb3890365afca98ed4bad44661c7b6bad650e3f1aa16530bbd67f7221056234"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T19:45:10+00:00",
   "candidates": [],

@@ -5,7 +5,7 @@ checked view of one edition; everything that reads or writes files uses the type
 """
 
 from datetime import date
-from typing import Required, TypedDict
+from typing import NotRequired, Required, TypedDict
 
 # ruamel.yaml turns ISO dates into `date`; hand-written strings stay `str` until to_date.
 DateValue = date | str | None
@@ -72,6 +72,7 @@ class ProbeRecord(TypedDict):
 class PageRecord(TypedDict):
     url: str
     status: int | None
+    error: NotRequired[str]
 
 
 class LanguageHint(TypedDict):
@@ -91,9 +92,8 @@ class CrawlRecord(TypedDict, total=False):
     final_url: str | None
     deadlines_url: PageRecord
     call_url: PageRecord
-    sha256: str
     sha256_of: str
-    hashed_pages: list[str]
+    page_hashes: dict[str, str]
     changed_on: str | None
     first_seen: str | None
     candidates: list[CandidateRecord]

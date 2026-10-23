@@ -41,7 +41,7 @@ SERIES_KEYS = {
     "proceedings_languages",
     "language_source",
 }
-SERIES_REQUIRED = {"id", "name", "continent", "editions", "languages", "language_source"}
+SERIES_REQUIRED = {"id", "name", "continent", "topics", "editions", "languages", "language_source"}
 LANGUAGE_FIELDS = {"languages", "presentation_languages", "proceedings_languages"}
 LANGUAGE_SOURCES = {"stated", "inferred"}
 # Call kinds and the formats they stand for, used by the call filter on the page. A single open
@@ -364,6 +364,8 @@ def _check_languages(sid: str, s: SeriesData) -> list[str]:
             problems.append(f"{sid}: {key} takes ISO 639-1 codes like en or de, not {bad!r}")
     if s.get("languages") == []:
         problems.append(f"{sid}: languages is empty")
+    if s.get("topics") == []:
+        problems.append(f"{sid}: topics is empty, the page would never show the series")
     return problems
 
 

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import requests
 
-from .crawl import TIMEOUT, USER_AGENT
+from .crawl import TIMEOUT, USER_AGENT, read_body
 from .schema import Rank, RankFile, RegistryData
 
 PORTAL = "https://portal.core.edu.au/conf-ranks/"
@@ -19,9 +19,12 @@ MIN_CELLS = 4
 
 
 def _get(session: requests.Session, params: dict[str, str | int] | None = None) -> str:
-    r = session.get(PORTAL, params=params, timeout=TIMEOUT)
-    r.raise_for_status()
-    return r.text
+    with session.get(PORTAL, params=params, timeout=TIMEOUT, stream=True) as r:
+        r.raise_for_status()
+        body = read_body(r)
+    if body is None:
+        raise RuntimeError("ICORE portal answer too large or too slow")
+    return body
 
 
 def latest_source(session: requests.Session) -> str:

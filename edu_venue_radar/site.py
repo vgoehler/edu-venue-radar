@@ -47,14 +47,18 @@ def sort_keys(ed: Edition, today: date) -> dict[str, str]:
     A category is missing when the edition has no live call of that kind; a live call without
     a date sorts last.
     """
-    nxt = ed.next_deadline(today)
-    keys = {"conf": ed.approx_start.isoformat(), "dl-all": nxt.isoformat() if nxt else NO_DATE}
     live_calls = ed.live_calls(today)
+
+    def soonest(calls: list[Call]) -> str:
+        dates = [d for c in calls if (d := c.effective_deadline())]
+        return min(dates).isoformat() if dates else NO_DATE
+
+    # dl-all is the same as Edition.next_deadline; the row sorts by it as well.
+    keys = {"conf": ed.approx_start.isoformat(), "dl-all": soonest(live_calls)}
     for cat in CALL_CATEGORIES:
         live = [c for c in live_calls if cat in categories(c.kind)]
         if live:
-            dates = [d for c in live if (d := c.effective_deadline())]
-            keys[f"dl-{cat}"] = min(dates).isoformat() if dates else NO_DATE
+            keys[f"dl-{cat}"] = soonest(live)
     return keys
 
 
@@ -122,16 +126,26 @@ def language_flags(crawl: CrawlRecord, series: SeriesData) -> list[str]:
     return flags
 
 
+def crawl_warnings(crawl: CrawlRecord) -> list[str]:
+    """Pages the crawler could not read: the edition page, its call page, its dates page."""
+    problems = []
+    if warning := crawl.get("warning"):
+        problems.append(warning)
+    if error := crawl.get("error"):
+        problems.append(f"unreachable ({error})")
+    for extra, label in ((crawl.get("call_url"), "call page"), (crawl.get("deadlines_url"), "dates page")):
+        if extra and (problem := extra.get("error")):
+            problems.append(f"{label} unreachable ({problem})")
+    return [f'<span class="warn">{escape(p)}</span>' for p in problems]
+
+
 def crawl_cell(crawl: CrawlRecord | None, ed: Edition, series: SeriesData) -> str:
     if not crawl:
         return '<span class="muted">not crawled yet</span>'
     parts = []
     confirmed = {c.deadline.isoformat() for c in ed.calls if c.deadline}
     checked = crawl.get("checked", "")[:10]
-    if crawl.get("warning"):
-        parts.append(f'<span class="warn">{escape(str(crawl["warning"]))}</span>')
-    if crawl.get("error"):
-        parts.append(f'<span class="warn">unreachable ({escape(str(crawl["error"]))})</span>')
+    parts += crawl_warnings(crawl)
     if changed_on := crawl.get("changed_on"):
         parts.append(f'<span class="flag">page changed {fmt(date.fromisoformat(changed_on[:10]))}</span>')
     for c in crawl.get("candidates", [])[:3]:
@@ -172,7 +186,8 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
     chips = "".join(f'<span class="chip">{escape(t)}</span>' for t in topics)
     kind = f'<div class="note">{escape(series["kind"])}</div>' if series.get("kind") else ""
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
-    data = " ".join(f'data-{k}="{v}"' for k, v in sort_keys(ed, today).items())
+    keys = sort_keys(ed, today)
+    data = " ".join(f'data-{k}="{v}"' for k, v in keys.items())
     langs = " ".join(series.get("languages", []))
     html = f"""
       <tr class="ev-{ed.evidence}" {data} data-topics="{escape(" ".join(topics))}" data-langs="{escape(langs)}">
@@ -186,7 +201,7 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
         <td class="crawl">{crawl_cell(crawl, ed, series)}</td>
         <td>{links_cell(ed)}</td>
       </tr>"""
-    return (ed.next_deadline(today) or date.max), html
+    return date.fromisoformat(keys["dl-all"]), html
 
 
 @dataclass
@@ -281,19 +296,19 @@ TEMPLATE = """<!doctype html>
 :root {{
   --bg: #fbfaf7; --fg: #1f2328; --muted: #6a6f76; --line: #e3e0d8; --head: #f1eee6;
   --accent: #2f5d8a; --soon: #b3261e; --soon-bg: #fdecea; --open: #1e6b3a; --flag: #8a5a00; --flag-bg: #fff4d6;
-  --chip: #e8eef5; --land: #c9d6e3; --land-hover: #a9bfd6; --land-on: #2f6aa3;
+  --chip: #e8eef5; --land: #c9d6e3; --land-hover: #a9bfd6; --land-on: #2f6aa3; --land-on-hover: #24527f;
 }}
 @media (prefers-color-scheme: dark) {{
   :root:not([data-theme="light"]) {{
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3; --land-on-hover: #24527f;
   }}
 }}
 :root[data-theme="dark"] {{
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3; --land-on-hover: #24527f;
 }}
 * {{ box-sizing: border-box; }}
 body {{ margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -332,6 +347,7 @@ tbody tr td:first-child::before {{ content: ""; position: absolute; left: 0; top
 .worldmap.picking .region path {{ fill: var(--line); }}
 .worldmap .region:not(.empty):hover path, .worldmap .region:not(.empty):focus-visible path {{ fill: var(--land-hover); }}
 .worldmap .region[aria-pressed="true"] path {{ fill: var(--land-on); }}
+.worldmap .region[aria-pressed="true"]:hover path, .worldmap .region[aria-pressed="true"]:focus-visible path {{ fill: var(--land-on-hover); }}
 .worldmap .region:focus-visible path {{ stroke: var(--fg); stroke-width: 1.2; }}
 .worldmap .region[aria-pressed="true"] text {{ fill: #fff; }}
 .mapside {{ display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; }}

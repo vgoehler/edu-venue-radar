@@ -45,7 +45,9 @@ def test_validate_language_fields():
     problems = registry.validate({"series": [bad]})
     assert "x: languages takes ISO 639-1 codes like en or de, not ['EN', 'german']" in problems
     assert "x: language_source must be stated or inferred, not 'guessed'" in problems
-    assert registry.validate({"series": [SERIES]}) == ["x: missing field language_source", "x: missing field languages"]
+    missing = ["x: missing field language_source", "x: missing field languages", "x: missing field topics"]
+    assert registry.validate({"series": [SERIES]}) == missing
+    assert "x: topics is empty, the page would never show the series" in registry.validate({"series": [{**SERIES, "topics": []}]})
 
 
 def test_languages_cell():

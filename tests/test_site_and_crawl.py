@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import date
 
 from edu_venue_radar import crawl, site
@@ -121,7 +122,7 @@ def test_crawl_keeps_old_findings_when_the_page_is_down(tmp_path):
     crawl.crawl_series(good, REG["series"][1], date(2026, 6, 1), tmp_path)
     down = crawl.crawl_series(FakeSession({}), REG["series"][1], date(2026, 6, 2), tmp_path)
     assert down["error"] == "HTTP 404"
-    assert "sha256" in down
+    assert "page_hashes" in down
 
 
 def test_crawl_appends_the_separate_deadlines_page(tmp_path):
@@ -139,7 +140,7 @@ def test_crawl_skips_an_empty_deadlines_page(tmp_path):
     series = {**REG["series"][0], "deadlines_pattern": "https://a.org/{year}/dates", "url_pattern": None}
     pages = {"https://a.org/2027/": (200, "<p>Workshop proposals due 7 December 2026</p>")}
     res = crawl.crawl_series(FakeSession(pages), series, date(2026, 10, 23), tmp_path)
-    assert res["deadlines_url"] == {"url": "https://a.org/2027/dates", "status": 404}
+    assert res["deadlines_url"] == {"url": "https://a.org/2027/dates", "status": 404, "error": "HTTP 404"}
     assert [c["when"] for c in res["candidates"]] == ["2026-12-07"]
 
 
@@ -242,16 +243,103 @@ def test_row_drops_links_that_are_not_web_urls():
     assert "javascript:" not in html and "data:text" not in html
 
 
-def test_a_page_coming_or_going_is_a_new_baseline_not_a_change(tmp_path):
+def test_pages_are_hashed_one_by_one(tmp_path):
     series = {**REG["series"][1], "keywords": ["paper"], "url_pattern": None}
     series["editions"] = {2027: {"url": "https://b.org/", "call_url": "https://cfp.b.org/", "start": "2027-02-01"}}
     main = {"https://b.org/": (200, "<p>Papers due 10 December 2026.</p>")}
     both = {**main, "https://cfp.b.org/": (200, "<p>Abstracts due 1 December 2026.</p>")}
-    first = crawl.crawl_series(FakeSession(both), series, date(2026, 10, 23), tmp_path)
-    down = crawl.crawl_series(FakeSession(main), series, date(2026, 10, 24), tmp_path)
-    back = crawl.crawl_series(FakeSession(both), series, date(2026, 10, 25), tmp_path)
-    assert first["hashed_pages"] == ["https://b.org/", "https://cfp.b.org/"]
-    assert down["hashed_pages"] == ["https://b.org/"]
-    assert first["changed_on"] is down["changed_on"] is back["changed_on"] is None
-    changed = {**both, "https://cfp.b.org/": (200, "<p>Abstracts due 8 December 2026.</p>")}
-    assert crawl.crawl_series(FakeSession(changed), series, date(2026, 10, 26), tmp_path)["changed_on"]
+    changed = {**main, "https://cfp.b.org/": (200, "<p>Abstracts due 8 December 2026.</p>")}
+    day = iter(range(23, 31))
+
+    def run(pages):
+        return crawl.crawl_series(FakeSession(pages), series, date(2026, 10, next(day)), tmp_path)
+
+    first = run(both)
+    assert sorted(first["page_hashes"]) == ["https://b.org/", "https://cfp.b.org/"]
+    # The call page going down and coming back unchanged is no change ...
+    assert run(main)["changed_on"] is None
+    assert run(both)["changed_on"] is None
+    # ... but coming back changed is, even though it was down in between.
+    run(main)
+    assert run(changed)["changed_on"]
+
+
+class BadHeaders(FakeSession):
+    def __init__(self, headers, body="<p>Papers due 10 December 2026.</p>"):
+        super().__init__({})
+        self.extra, self.body = headers, body
+
+    def get(self, url, **_):
+        r = FakeResponse(200, self.body, url, self.extra)
+        r.encoding = "x-user-defined" if "charset" in self.extra.get("content-type", "") else None
+        return r
+
+
+def test_unknown_charset_and_broken_length_do_not_crash():
+    page = crawl.fetch(BadHeaders({"content-type": "text/html; charset=x-user-defined"}), "https://x.org/")
+    assert page.text == "Papers due 10 December 2026."
+    page = crawl.fetch(BadHeaders({"content-length": "5,0"}), "https://x.org/")
+    assert page.text == "Papers due 10 December 2026."
+
+
+def test_decode_prefers_utf8_then_cp1252():
+    assert crawl._decode("Frühjahr".encode(), {}, "ISO-8859-1") == "Frühjahr"
+    assert crawl._decode("Frühjahr".encode("cp1252"), {}, None) == "Frühjahr"
+    assert crawl._decode("Frühjahr".encode("latin-1"), {"content-type": "text/html; charset=latin-1"}, "latin-1") == "Frühjahr"
+
+
+class Trickle(FakeResponse):
+    """Sends nothing until closed, like a server that drips a byte now and then."""
+
+    def __init__(self, url):
+        super().__init__(200, "", url)
+        self.closed = False
+
+    def iter_content(self, size):
+        while not self.closed:
+            time.sleep(0.01)
+        raise crawl.requests.ConnectionError("closed")
+        yield b""
+
+    def close(self):
+        self.closed = True
+
+
+def test_watchdog_ends_a_trickling_response(monkeypatch):
+    monkeypatch.setattr(crawl, "MAX_SECONDS", 0.2)
+
+    class Slow(FakeSession):
+        def get(self, url, **_):
+            return Trickle(url)
+
+    started = time.monotonic()
+    page = crawl.fetch(Slow({}), "https://x.org/")
+    assert page.error == "page too large or too slow"
+    assert time.monotonic() - started < 2
+
+
+def test_one_failing_series_does_not_stop_the_crawl(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(crawl, "PAUSE", 0)
+    real = crawl.crawl_series
+
+    def flaky(session, series, today, state_dir):
+        if series["id"] == "a":
+            raise RuntimeError("boom")
+        return real(FakeSession({}), series, today, state_dir)
+
+    monkeypatch.setattr(crawl, "crawl_series", flaky)
+    results = crawl.crawl(REG, tmp_path, date(2026, 10, 23))
+    assert [r["id"] for r in results] == ["b"]
+    assert "a: crawl failed: RuntimeError('boom')" in capsys.readouterr().err
+
+
+def test_crawl_cell_shows_an_unreachable_call_page():
+    record = {
+        "id": "a",
+        "edition": 2027,
+        "url": None,
+        "checked": "",
+        "call_url": {"url": "https://c", "status": 404, "error": "HTTP 404"},
+    }
+    cell = site.crawl_cell(record, edition(REG["series"][0], 2027), REG["series"][0])
+    assert "call page unreachable (HTTP 404)" in cell

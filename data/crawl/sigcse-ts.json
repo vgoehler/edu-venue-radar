@@ -2,14 +2,13 @@
   "id": "sigcse-ts",
   "edition": 2028,
   "url": "https://2027.sigcse-ts.acm.org/",
-  "checked": "2026-10-23T19:38:52+00:00",
+  "checked": "2026-10-23T20:07:05+00:00",
   "status": 200,
   "final_url": "https://2027.sigcse-ts.acm.org/",
-  "sha256": "7a4551b1bbe7479841aeb4c3d5851d6679eaa461444d9bdc5666832a76e0e590",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://2027.sigcse-ts.acm.org/"
-  ],
+  "page_hashes": {
+    "https://2027.sigcse-ts.acm.org/": "8530650a0297cc28142bd0a4a77b5655dcbf43fb44752c9a2616d00bae4bc2a1"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T19:02:07+00:00",
   "candidates": [],

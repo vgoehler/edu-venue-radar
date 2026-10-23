@@ -2,19 +2,18 @@
   "id": "delfi",
   "edition": 2027,
   "url": "https://delfi-tagung.de/2027/",
-  "checked": "2026-10-23T19:38:28+00:00",
+  "checked": "2026-10-23T20:06:40+00:00",
   "deadlines_url": {
     "url": "https://delfi-tagung.de/2027/termine",
     "status": 200
   },
   "status": 200,
   "final_url": "https://delfi-tagung.de/2027/",
-  "sha256": "be5da60695d5577c7a15ac577794c7701f1bf39a118170b8ce9c096b7bea02cb",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://delfi-tagung.de/2027/",
-    "https://delfi-tagung.de/2027/termine"
-  ],
+  "page_hashes": {
+    "https://delfi-tagung.de/2027/": "5ed5d21976c9226382f16547133a11a2cf9310e9247d18d06052f953c04dad3c",
+    "https://delfi-tagung.de/2027/termine": "398b6e3eb2e90b1d683a6c47b0d6ebc71970a348dad5a2c79ed65d84abb7ba89"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T10:32:09+00:00",
   "candidates": [

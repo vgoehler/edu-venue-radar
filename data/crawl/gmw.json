@@ -2,14 +2,13 @@
   "id": "gmw",
   "edition": 2027,
   "url": "https://www.gmw-online.de/category/gmw-jahrestagungen/",
-  "checked": "2026-10-23T19:38:39+00:00",
+  "checked": "2026-10-23T20:06:50+00:00",
   "status": 200,
   "final_url": "https://www.gmw-online.de/category/gmw-jahrestagungen/",
-  "sha256": "0f7ee2beed08564c098d025aa04cd350cdea8288ca07be5478531040be225b35",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://www.gmw-online.de/category/gmw-jahrestagungen/"
-  ],
+  "page_hashes": {
+    "https://www.gmw-online.de/category/gmw-jahrestagungen/": "5b761dd312cd49bc45499844a0952a6c4a75e5fad0698cc3ad7835bc9f1d2da7"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:13+00:00",
   "candidates": [

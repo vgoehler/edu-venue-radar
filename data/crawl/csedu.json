@@ -2,19 +2,18 @@
   "id": "csedu",
   "edition": 2027,
   "url": "https://csedu.scitevents.org/",
-  "checked": "2026-10-23T19:38:15+00:00",
+  "checked": "2026-10-23T20:06:27+00:00",
   "call_url": {
     "url": "https://csedu.scitevents.org/CallForPapers.aspx",
     "status": 200
   },
   "status": 200,
   "final_url": "https://csedu.scitevents.org/",
-  "sha256": "ff0ab5924dd41e6ed10f6565d27539e97f81f26b0ea98b2a43a05377681156ba",
-  "sha256_of": "date-lines-per-page",
-  "hashed_pages": [
-    "https://csedu.scitevents.org/",
-    "https://csedu.scitevents.org/CallForPapers.aspx"
-  ],
+  "page_hashes": {
+    "https://csedu.scitevents.org/": "c4f722422a4556e601e79d53ab7b7702b01a1f964464c0bd10dfef3150de961d",
+    "https://csedu.scitevents.org/CallForPapers.aspx": "317e967d0d83a46736131a600e432c35b39ebb69ff9551cf3c8681b37e3d7dfa"
+  },
+  "sha256_of": "date-lines-by-page",
   "changed_on": "2026-10-23T19:01:48+00:00",
   "first_seen": "2026-10-23T10:28:17+00:00",
   "candidates": [
