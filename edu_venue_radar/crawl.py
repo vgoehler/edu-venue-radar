@@ -31,10 +31,18 @@ PAUSE = 1.0
 MAX_CANDIDATES = 5
 HTTP_OK = 200
 # What `sha256` was taken over; a stored hash of another kind is a baseline, not a change.
-HASH_OF = "date-lines"
+HASH_OF = "date-lines-per-page"
 # Kept from the previous run when the page cannot be read this time.
-CarriedKey = Literal["sha256", "sha256_of", "changed_on", "first_seen", "candidates", "language_hints"]
-CARRIED_OVER: tuple[CarriedKey, ...] = ("sha256", "sha256_of", "changed_on", "first_seen", "candidates", "language_hints")
+CarriedKey = Literal["sha256", "sha256_of", "hashed_pages", "changed_on", "first_seen", "candidates", "language_hints"]
+CARRIED_OVER: tuple[CarriedKey, ...] = (
+    "sha256",
+    "sha256_of",
+    "hashed_pages",
+    "changed_on",
+    "first_seen",
+    "candidates",
+    "language_hints",
+)
 
 
 @dataclass
@@ -99,9 +107,14 @@ def probe(session: requests.Session, url: str) -> ProbeRecord:
     return {"url": url, "status": page.status, "final_url": final, "exists": exists}
 
 
-def page_digest(text: str) -> str:
-    """Hash of the date-bearing sentences only, so rotating teasers without dates do not count as a change."""
-    return hashlib.sha256("\n".join(date_lines(text)).encode()).hexdigest()
+def page_digest(texts: dict[str, str]) -> str:
+    """Hash of the date-bearing sentences of each page, so rotating teasers without dates do not count as a change.
+
+    Each page is hashed on its own and under its URL, so text moving between pages or a page
+    being added does not look like the same page changing.
+    """
+    parts = [f"{url}\n" + "\n".join(date_lines(text)) for url, text in sorted(texts.items())]
+    return hashlib.sha256("\n\n".join(parts).encode()).hexdigest()
 
 
 def conference_start(ed: Edition) -> date | None:
@@ -114,38 +127,51 @@ def conference_start(ed: Edition) -> date | None:
 ExtraPage = Literal["deadlines_url", "call_url"]
 
 
-def _edition_text(session: requests.Session, series: SeriesData, ed: Edition) -> tuple[Fetched, dict[ExtraPage, PageRecord]]:
-    """The edition page with the text of its extra pages appended, and a record of each extra page.
+@dataclass
+class EditionPages:
+    """What one crawl read for an edition: the edition page, its extra pages, and the text of every usable page."""
 
-    Extra pages are the separate dates page of series that keep their dates apart, and the
-    edition's call page. Without a usable edition page the call page stands in for it.
+    main: Fetched
+    extras: dict[ExtraPage, PageRecord]
+    texts: dict[str, str]
+
+    @property
+    def text(self) -> str | None:
+        return " ".join(self.texts.values()) if self.texts else None
+
+
+def _read_edition(session: requests.Session, series: SeriesData, ed: Edition) -> EditionPages:
+    """The edition page plus its extra pages: the separate dates page of series that keep their
+    dates apart, and the edition's call page. Without a usable edition page the call page stands in.
     """
-    page = fetch(session, ed.url) if ed.url else Fetched("", error="no URL")
+    main = fetch(session, ed.url) if ed.url else Fetched("", error="no URL")
+    pages = EditionPages(main, {}, {main.url: main.text} if main.text is not None else {})
     extras: list[tuple[ExtraPage, str]] = []
     pattern = series.get("deadlines_pattern")
-    if pattern and page.text is not None:
+    if pattern and main.text is not None:
         extras.append(("deadlines_url", url_for(pattern, ed.year)))
     if ed.call_url and ed.call_url != ed.url:
         extras.append(("call_url", ed.call_url))
-    records: dict[ExtraPage, PageRecord] = {}
-    texts = [page.text] if page.text is not None else []
     for key, url in extras:
         extra = fetch(session, url)
-        records[key] = {"url": extra.url, "status": extra.status}
+        pages.extras[key] = {"url": extra.url, "status": extra.status}
         if extra.text:
-            texts.append(extra.text)
-    if texts:
-        page.text = " ".join(texts)
-    return page, records
+            pages.texts[url] = extra.text
+    return pages
 
 
-def _record_change(result: CrawlRecord, previous: CrawlRecord, digest: str) -> None:
-    """sha256, changed_on and first_seen against the last run; a new URL starts over."""
+def _record_change(result: CrawlRecord, previous: CrawlRecord, texts: dict[str, str]) -> None:
+    """sha256, changed_on and first_seen against the last run.
+
+    A new edition URL starts over. When the set of readable pages differs from the last run
+    (a page was down, or a call page was added), the hash is a new baseline, not a change.
+    """
+    digest, hashed = page_digest(texts), sorted(texts)
     same_page = previous.get("url") == result["url"]
-    comparable = previous.get("sha256_of") == HASH_OF
+    comparable = previous.get("sha256_of") == HASH_OF and previous.get("hashed_pages") == hashed
     changed = same_page and comparable and previous.get("sha256") not in (None, digest)
     now = result["checked"]
-    result["sha256"], result["sha256_of"] = digest, HASH_OF
+    result["sha256"], result["sha256_of"], result["hashed_pages"] = digest, HASH_OF, hashed
     result["changed_on"] = now if changed else (previous.get("changed_on") if same_page else None)
     result["first_seen"] = (previous.get("first_seen") if same_page else None) or now
 
@@ -170,17 +196,21 @@ def crawl_series(session: requests.Session, series: SeriesData, today: date, sta
     now = datetime.now(UTC).isoformat(timespec="seconds")
 
     result: CrawlRecord = {"id": series["id"], "edition": ed.year, "url": ed.url, "checked": now}
-    page, extras = _edition_text(session, series, ed)
-    for extra_key, record in extras.items():
+    pages = _read_edition(session, series, ed)
+    for extra_key, record in pages.extras.items():
         result[extra_key] = record
-    result["status"], result["final_url"] = page.status, page.final_url
+    main = pages.main
+    result["status"], result["final_url"] = main.status, main.final_url
+    main_problem = main.error or f"HTTP {main.status}"
 
-    if page.text is not None:
-        _record_change(result, previous, page_digest(page.text))
-        result["candidates"] = _candidates(page.text, series, ed, today)
-        result["language_hints"] = language_hints(page.text)
+    if (text := pages.text) is not None:
+        if main.text is None:
+            result["warning"] = f"edition page unreadable ({main_problem}), read the call page instead"
+        _record_change(result, previous, pages.texts)
+        result["candidates"] = _candidates(text, series, ed, today)
+        result["language_hints"] = language_hints(text)
     else:
-        result["error"] = page.error or f"HTTP {page.status}"
+        result["error"] = main_problem
         if previous.get("url") == ed.url:
             for key in CARRIED_OVER:
                 if key in previous:

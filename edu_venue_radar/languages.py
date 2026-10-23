@@ -45,7 +45,7 @@ STATEMENTS = [
     # Authors should submit a paper in English
     re.compile(rf"\bsubmit\w*\s+(?:a\s+|your\s+)?(?:paper|contribution|proposal|abstract)s?\s+in\s+({_NAMES})", re.I),
     # official language of the conference is English; conference languages: German and English
-    re.compile(rf"\b(?:official\s+)?languages?\s+(?:of\s+the\s+conference\s+)?(?:is|are|:)\s+({_NAMES})", re.I),
+    re.compile(rf"\b(?:official\s+)?languages?(?:\s+of\s+the\s+conference)?(?:\s+(?:is|are)|\s*:)\s*({_NAMES})", re.I),
     # Beiträge auf Deutsch oder Englisch; in deutscher oder englischer Sprache
     re.compile(rf"\bBeiträge\b[^.]{{0,60}}?\b(?:auf|in)\s+({_NAMES})", re.I),
     re.compile(rf"\bin\s+({_NAMES})\s+Sprache", re.I),

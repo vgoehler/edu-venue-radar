@@ -2,11 +2,14 @@
   "id": "itk",
   "edition": 2027,
   "url": "https://easychair.org/cfp/ITK2027",
-  "checked": "2026-10-23T19:29:29+00:00",
+  "checked": "2026-10-23T19:38:12+00:00",
   "status": 200,
   "final_url": "https://easychair.org/cfp/ITK2027",
-  "sha256": "f03e085d79de617404f78eab1cc11ee63bbad2192c58a3faf6852cba187dbb82",
-  "sha256_of": "date-lines",
+  "sha256": "d9732656a2ba1f873dbc92d8a5683d3214bec5e92fe3b0d4af28e9ba7070b53f",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://easychair.org/cfp/ITK2027"
+  ],
   "changed_on": null,
   "first_seen": "2026-10-23T10:28:14+00:00",
   "candidates": [

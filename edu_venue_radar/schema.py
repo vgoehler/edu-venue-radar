@@ -93,11 +93,13 @@ class CrawlRecord(TypedDict, total=False):
     call_url: PageRecord
     sha256: str
     sha256_of: str
+    hashed_pages: list[str]
     changed_on: str | None
     first_seen: str | None
     candidates: list[CandidateRecord]
     language_hints: list[LanguageHint]
     error: str
+    warning: str
     probes: list[ProbeRecord]
 
 

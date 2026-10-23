@@ -44,6 +44,18 @@ SERIES_KEYS = {
 SERIES_REQUIRED = {"id", "name", "continent", "editions", "languages", "language_source"}
 LANGUAGE_FIELDS = {"languages", "presentation_languages", "proceedings_languages"}
 LANGUAGE_SOURCES = {"stated", "inferred"}
+# Call kinds and the formats they stand for, used by the call filter on the page. A single open
+# call for every format ("contributions", "sessions", ...) counts for all of them.
+CALL_CATEGORIES = {
+    "papers": {"papers", "abstracts"},
+    "workshops": {"workshops", "workshops-special-sessions", "working-groups"},
+    "posters": {"posters-demos", "posters-lightning-talks"},
+    "special": {"special-sessions", "workshops-special-sessions"},
+}
+OPEN_CALLS = {"contributions", "proposals", "presentations", "sessions", "congress"}
+CALL_KINDS = set().union(*CALL_CATEGORIES.values()) | OPEN_CALLS | {"artifacts"}
+# Location text of an edition whose place is not known yet; `next_edition` writes it.
+NOT_ANNOUNCED = "not announced"
 EDITION_KEYS = {"url", "url_is_fallback", "call_url", "location", "start", "end", "when", "calls"}
 CALL_KEYS = {"deadline", "deadline_hint", "note", "closed"}
 LIST_FIELDS = {"topics", "keywords"} | LANGUAGE_FIELDS
@@ -167,7 +179,7 @@ class Edition:
         if any(c.deadline for c in self.calls) and not self.synthesized:
             return "confirmed"
         own_page = bool(self.url) and not self.url_is_fallback
-        place = bool(self.location) and not (self.location or "").startswith("not announced")
+        place = bool(self.location) and not str(self.location).startswith(NOT_ANNOUNCED)
         if not self.synthesized and (self.start or own_page or place):
             return "partial"
         return "guessed"
@@ -229,7 +241,7 @@ def next_edition(prev: Edition) -> Edition:
     year = prev.year + 1
     month = prev.approx_start.strftime("%B")
     prev_place = prev.location or "unknown"
-    location = prev_place if prev_place.startswith("not announced") else f"not announced ({prev.year}: {prev_place})"
+    location = prev_place if prev_place.startswith(NOT_ANNOUNCED) else f"{NOT_ANNOUNCED} ({prev.year}: {prev_place})"
     # The previous edition's page is what exists today; the crawler probes url_pattern
     # for the new year and reports when that page goes online.
     ed = Edition(
@@ -333,6 +345,8 @@ def _check_edition(where: str, ed: EditionData) -> list[str]:
         problems.append(f"{where}: call_url is the same as url, leave it out")
     for kind, raw_call in (ed.get("calls") or {}).items():
         call: CallData = raw_call or {}
+        if kind not in CALL_KINDS:
+            problems.append(f"{where}: unknown call kind {kind!r}, known are {', '.join(sorted(CALL_KINDS))}")
         problems += [f"{where} {kind}: unknown field {k}" for k in sorted(set(call) - CALL_KEYS)]
         problems += _check_types(f"{where} {kind}", call)
         problems += _check_dates(f"{where} {kind}", call, ("deadline", "deadline_hint"))

@@ -89,9 +89,11 @@ def world_map(counts: dict[str, int]) -> str:
         n = counts.get(name, 0)
         x, y = LABELS[name]
         label = f"{name}: {n} venue{'' if n == 1 else 's'}"
+        # Only regions with venues are buttons; an empty one is a picture, not a tab stop.
+        control = 'role="button" tabindex="0" aria-pressed="false"' if n else 'role="img"'
         groups.append(
-            f'<g class="region{"" if n else " empty"}" data-continent="{escape(name)}" role="button" tabindex="0" '
-            f'aria-pressed="false" aria-label="{escape(label)}"><title>{escape(label)}</title>'
+            f'<g class="region{"" if n else " empty"}" data-continent="{escape(name)}" {control} '
+            f'aria-label="{escape(label)}"><title>{escape(label)}</title>'
             + "".join(f'<path d="{_path(o)}"/>' for o in outlines)
             + (f'<text x="{x}" y="{-y}">{n}</text>' if n else "")
             + "</g>"

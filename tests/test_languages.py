@@ -87,3 +87,9 @@ def test_long_hostile_name_lists_do_not_backtrack():
     started = time.monotonic()
     assert langs("in English" + " or English" * 200 + " x") == []
     assert time.monotonic() - started < 1
+
+
+def test_label_with_colon():
+    assert langs("Language: English") == [("statement", ["en"])]
+    assert langs("Conference language: German and English") == [("statement", ["de", "en"])]
+    assert langs("The language is clear") == []

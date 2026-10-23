@@ -2,15 +2,19 @@
   "id": "educon",
   "edition": 2027,
   "url": "https://educon-conference.org/2027",
-  "checked": "2026-10-23T19:29:35+00:00",
+  "checked": "2026-10-23T19:38:19+00:00",
   "call_url": {
     "url": "https://educon-conference.org/2027/authors/call-for-papers",
     "status": 200
   },
   "status": 200,
   "final_url": "https://educon-conference.org/2027",
-  "sha256": "d930c82f1fa1763aeab777bed787cdaee0271acebbd9fd5e40bee3d7390cbdd0",
-  "sha256_of": "date-lines",
+  "sha256": "9ad6bfe7767e080922ff5215b42255c943f50d3915f3cd180db6690c176d38b0",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://educon-conference.org/2027",
+    "https://educon-conference.org/2027/authors/call-for-papers"
+  ],
   "changed_on": "2026-10-23T19:01:53+00:00",
   "first_seen": "2026-10-23T10:28:19+00:00",
   "candidates": [

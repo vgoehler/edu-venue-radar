@@ -2,11 +2,14 @@
   "id": "issotl",
   "edition": 2027,
   "url": "https://issotl.com/",
-  "checked": "2026-10-23T19:30:25+00:00",
+  "checked": "2026-10-23T19:39:05+00:00",
   "status": 200,
   "final_url": "https://issotl.com/",
-  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "sha256_of": "date-lines",
+  "sha256": "1dc0128b2158cdbe68c39add3ff1bc7aa353f0dea565268d4d6093feeb3366e0",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://issotl.com/"
+  ],
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:40+00:00",
   "candidates": [],

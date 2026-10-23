@@ -2,11 +2,14 @@
   "id": "eurosotl",
   "edition": 2027,
   "url": "https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en",
-  "checked": "2026-10-23T19:29:39+00:00",
+  "checked": "2026-10-23T19:38:22+00:00",
   "status": 200,
   "final_url": "https://www.rug.nl/about-ug/organization/service-departments/centre-for-teaching-and-learning/",
-  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "sha256_of": "date-lines",
+  "sha256": "ab70c1eac6a004cecce4417dcaca9b8e93da9347d24101ddaa2459e368223fbc",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en"
+  ],
   "changed_on": null,
   "first_seen": "2026-10-23T10:31:26+00:00",
   "candidates": [],

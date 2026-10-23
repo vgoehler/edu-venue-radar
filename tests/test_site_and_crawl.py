@@ -155,6 +155,7 @@ def test_crawl_reads_the_call_page_and_stands_in_for_a_missing_edition_page(tmp_
     pages = {"https://cfp.b.org/2027": (200, "<p>Papers must be submitted in English by 10 December 2026.</p>")}
     res = crawl.crawl_series(FakeSession(pages), series, date(2026, 10, 23), tmp_path)
     assert res["status"] == 404 and "error" not in res
+    assert res["warning"] == "edition page unreadable (HTTP 404), read the call page instead"
     assert res["call_url"] == {"url": "https://cfp.b.org/2027", "status": 200}
     assert [c["when"] for c in res["candidates"]] == ["2026-12-10"]
     assert res["language_hints"][0]["languages"] == ["en"]
@@ -239,3 +240,18 @@ def test_row_drops_links_that_are_not_web_urls():
     series = {**REG["series"][1], "editions": {2027: {"url": "javascript:alert(1)", "call_url": "data:text/html,x"}}}
     _, html = site.row(series, edition(series, 2027), None, None, date(2026, 10, 23))
     assert "javascript:" not in html and "data:text" not in html
+
+
+def test_a_page_coming_or_going_is_a_new_baseline_not_a_change(tmp_path):
+    series = {**REG["series"][1], "keywords": ["paper"], "url_pattern": None}
+    series["editions"] = {2027: {"url": "https://b.org/", "call_url": "https://cfp.b.org/", "start": "2027-02-01"}}
+    main = {"https://b.org/": (200, "<p>Papers due 10 December 2026.</p>")}
+    both = {**main, "https://cfp.b.org/": (200, "<p>Abstracts due 1 December 2026.</p>")}
+    first = crawl.crawl_series(FakeSession(both), series, date(2026, 10, 23), tmp_path)
+    down = crawl.crawl_series(FakeSession(main), series, date(2026, 10, 24), tmp_path)
+    back = crawl.crawl_series(FakeSession(both), series, date(2026, 10, 25), tmp_path)
+    assert first["hashed_pages"] == ["https://b.org/", "https://cfp.b.org/"]
+    assert down["hashed_pages"] == ["https://b.org/"]
+    assert first["changed_on"] is down["changed_on"] is back["changed_on"] is None
+    changed = {**both, "https://cfp.b.org/": (200, "<p>Abstracts due 8 December 2026.</p>")}
+    assert crawl.crawl_series(FakeSession(changed), series, date(2026, 10, 26), tmp_path)["changed_on"]

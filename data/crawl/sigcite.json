@@ -2,11 +2,14 @@
   "id": "sigcite",
   "edition": 2027,
   "url": "https://easychair.org/cfp/SIGCITE-26",
-  "checked": "2026-10-23T19:30:08+00:00",
+  "checked": "2026-10-23T19:38:48+00:00",
   "status": 200,
   "final_url": "https://easychair.org/cfp/SIGCITE-26",
-  "sha256": "917cdfb015fee53abfaf09b5ff7f974035e122b96593cb5ab0af04a58a1f6aa2",
-  "sha256_of": "date-lines",
+  "sha256": "f73bcfda4209541900c611dba5607d9e2890008ea87d90ee9cb9fbfd285fbe92",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://easychair.org/cfp/SIGCITE-26"
+  ],
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:25+00:00",
   "candidates": [],

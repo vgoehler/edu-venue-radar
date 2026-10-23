@@ -15,13 +15,13 @@
   :root:not([data-theme="light"]) {
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
   }
 }
 :root[data-theme="dark"] {
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
 }
 * { box-sizing: border-box; }
 body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -55,15 +55,17 @@ tbody tr td:first-child::before { content: ""; position: absolute; left: 0; top:
 .region path { fill: var(--land); stroke: var(--bg); stroke-width: .4; transition: fill .15s; }
 .region { cursor: pointer; outline: none; }
 .region text { font-size: 9px; font-weight: 600; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; pointer-events: none; }
-.region:hover path, .region:focus-visible path { fill: var(--land-hover); }
 .region.empty { cursor: default; }
 .region.empty path { fill: var(--line); }
 .worldmap.picking .region path { fill: var(--line); }
+.worldmap .region:not(.empty):hover path, .worldmap .region:not(.empty):focus-visible path { fill: var(--land-hover); }
 .worldmap .region[aria-pressed="true"] path { fill: var(--land-on); }
+.worldmap .region:focus-visible path { stroke: var(--fg); stroke-width: 1.2; }
 .worldmap .region[aria-pressed="true"] text { fill: #fff; }
 .mapside { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; }
 .mapside button { font: inherit; font-size: .88rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 6px;
   background: var(--head); color: var(--fg); cursor: pointer; }
+.mapside button:disabled { opacity: .5; cursor: default; }
 .mapside button[aria-pressed="true"] { background: var(--land-on); border-color: var(--land-on); color: #fff; }
 .lang { display: inline-block; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin: 0 4px 2px 0; font-size: .78rem; font-weight: 600; }
 .lang.inferred { font-weight: 400; border-style: dashed; cursor: help; }
@@ -99,7 +101,7 @@ footer { margin-top: 40px; color: var(--muted); font-size: .85rem; max-width: 80
 <p class="lead">Conferences on digital education, AI in education, computing education and the Scholarship of
 Teaching and Learning, with their calls, deadlines, organizers and rankings. Built 23.10.2026, crawled weekly.
 Deadlines due within 45 days are marked red. Each series shows its next edition that still has an open call.</p>
-<div class="mapbox"><svg class="worldmap" viewBox="-170 -85 355 145" role="group" aria-label="Filter by continent"><g class="region" data-continent="North America" role="button" tabindex="0" aria-pressed="false" aria-label="North America: 4 venues"><title>North America: 4 venues</title><path d="M-168,-66 L-162,-70 L-140,-70 L-125,-70 L-95,-72 L-80,-73 L-65,-62 L-56,-52 L-66,-45 L-70,-42 L-76,-35 L-81,-31 L-80,-25 L-82,-29 L-90,-29 L-97,-26 L-97,-21 L-90,-21 L-87,-16 L-83,-9 L-78,-8 L-83,-8 L-92,-15 L-105,-20 L-110,-23 L-115,-30 L-118,-34 L-124,-40 L-124,-48 L-130,-55 L-140,-60 L-152,-58 L-165,-60 Z"/><path d="M-73,-78 L-60,-82 L-30,-83 L-20,-75 L-22,-70 L-42,-60 L-50,-64 L-55,-70 Z"/><text x="-100" y="-45">4</text></g><g class="region" data-continent="South America" role="button" tabindex="0" aria-pressed="false" aria-label="South America: 1 venue"><title>South America: 1 venue</title><path d="M-80,-9 L-72,-12 L-62,-10 L-50,0 L-35,5 L-38,13 L-40,22 L-48,26 L-53,34 L-58,38 L-65,42 L-66,55 L-72,52 L-74,45 L-72,30 L-71,18 L-76,14 L-81,5 L-80,-1 L-78,-7 Z"/><text x="-60" y="15">1</text></g><g class="region" data-continent="Europe" role="button" tabindex="0" aria-pressed="false" aria-label="Europe: 16 venues"><title>Europe: 16 venues</title><path d="M-10,-36 L-9,-43 L-2,-44 L-5,-48 L2,-51 L5,-53 L8,-57 L5,-61 L10,-64 L15,-69 L25,-71 L31,-70 L40,-67 L45,-68 L60,-68 L60,-55 L52,-47 L48,-42 L40,-41 L28,-41 L26,-38 L23,-36 L20,-40 L15,-38 L12,-44 L8,-44 L3,-43 L-1,-37 L-5,-36 Z"/><path d="M-6,-50 L-5,-58 L-3,-59 L2,-52 L1,-51 Z"/><path d="M-10,-52 L-8,-55 L-6,-54 L-6,-52 Z"/><path d="M-24,-64 L-22,-66 L-14,-66 L-14,-64 L-19,-63 Z"/><text x="15" y="-52">16</text></g><g class="region empty" data-continent="Africa" role="button" tabindex="0" aria-pressed="false" aria-label="Africa: 0 venues"><title>Africa: 0 venues</title><path d="M-17,-21 L-16,-28 L-10,-30 L-6,-36 L10,-37 L11,-33 L20,-31 L32,-31 L34,-28 L38,-18 L43,-12 L51,-12 L46,-2 L40,5 L40,15 L35,24 L32,29 L27,34 L20,35 L18,30 L14,23 L12,17 L13,6 L9,1 L9,-4 L5,-6 L-8,-4 L-13,-8 L-17,-14 Z"/><path d="M44,25 L47,25 L50,15 L49,12 L44,16 Z"/></g><g class="region" data-continent="Australia and Asia-Pacific" role="button" tabindex="0" aria-pressed="false" aria-label="Australia and Asia-Pacific: 2 venues"><title>Australia and Asia-Pacific: 2 venues</title><path d="M28,-41 L36,-36 L35,-32 L34,-28 L43,-13 L52,-15 L57,-20 L60,-23 L67,-24 L72,-20 L77,-8 L80,-15 L88,-22 L92,-21 L98,-16 L100,-8 L103,-1 L105,-10 L109,-12 L108,-21 L117,-23 L122,-30 L121,-38 L126,-37 L129,-35 L130,-43 L140,-48 L142,-54 L135,-55 L141,-59 L155,-59 L163,-61 L178,-64 L180,-69 L160,-70 L140,-73 L113,-76 L100,-78 L80,-73 L68,-70 L60,-68 L60,-55 L52,-47 L48,-42 L40,-41 Z"/><path d="M130,-31 L135,-34 L141,-38 L142,-45 L140,-41 L133,-34 Z"/><path d="M95,-5 L98,-4 L106,6 L103,5 Z"/><path d="M109,-1 L117,-7 L119,-1 L116,4 L110,3 Z"/><path d="M106,6 L115,8 L114,9 L106,7 Z"/><path d="M131,1 L141,3 L150,10 L141,9 L138,5 Z"/><path d="M120,-18 L122,-18 L126,-7 L122,-7 Z"/><path d="M114,22 L122,17 L130,12 L137,12 L142,11 L146,19 L153,26 L151,34 L146,39 L140,38 L135,35 L129,32 L115,34 Z"/><path d="M172,35 L178,38 L174,41 L167,46 L171,44 Z"/><text x="100" y="-45">2</text></g></svg>
+<div class="mapbox"><svg class="worldmap" viewBox="-170 -85 355 145" role="group" aria-label="Filter by continent"><g class="region" data-continent="North America" role="button" tabindex="0" aria-pressed="false" aria-label="North America: 4 venues"><title>North America: 4 venues</title><path d="M-168,-66 L-162,-70 L-140,-70 L-125,-70 L-95,-72 L-80,-73 L-65,-62 L-56,-52 L-66,-45 L-70,-42 L-76,-35 L-81,-31 L-80,-25 L-82,-29 L-90,-29 L-97,-26 L-97,-21 L-90,-21 L-87,-16 L-83,-9 L-78,-8 L-83,-8 L-92,-15 L-105,-20 L-110,-23 L-115,-30 L-118,-34 L-124,-40 L-124,-48 L-130,-55 L-140,-60 L-152,-58 L-165,-60 Z"/><path d="M-73,-78 L-60,-82 L-30,-83 L-20,-75 L-22,-70 L-42,-60 L-50,-64 L-55,-70 Z"/><text x="-100" y="-45">4</text></g><g class="region" data-continent="South America" role="button" tabindex="0" aria-pressed="false" aria-label="South America: 1 venue"><title>South America: 1 venue</title><path d="M-80,-9 L-72,-12 L-62,-10 L-50,0 L-35,5 L-38,13 L-40,22 L-48,26 L-53,34 L-58,38 L-65,42 L-66,55 L-72,52 L-74,45 L-72,30 L-71,18 L-76,14 L-81,5 L-80,-1 L-78,-7 Z"/><text x="-60" y="15">1</text></g><g class="region" data-continent="Europe" role="button" tabindex="0" aria-pressed="false" aria-label="Europe: 16 venues"><title>Europe: 16 venues</title><path d="M-10,-36 L-9,-43 L-2,-44 L-5,-48 L2,-51 L5,-53 L8,-57 L5,-61 L10,-64 L15,-69 L25,-71 L31,-70 L40,-67 L45,-68 L60,-68 L60,-55 L52,-47 L48,-42 L40,-41 L28,-41 L26,-38 L23,-36 L20,-40 L15,-38 L12,-44 L8,-44 L3,-43 L-1,-37 L-5,-36 Z"/><path d="M-6,-50 L-5,-58 L-3,-59 L2,-52 L1,-51 Z"/><path d="M-10,-52 L-8,-55 L-6,-54 L-6,-52 Z"/><path d="M-24,-64 L-22,-66 L-14,-66 L-14,-64 L-19,-63 Z"/><text x="15" y="-52">16</text></g><g class="region empty" data-continent="Africa" role="img" aria-label="Africa: 0 venues"><title>Africa: 0 venues</title><path d="M-17,-21 L-16,-28 L-10,-30 L-6,-36 L10,-37 L11,-33 L20,-31 L32,-31 L34,-28 L38,-18 L43,-12 L51,-12 L46,-2 L40,5 L40,15 L35,24 L32,29 L27,34 L20,35 L18,30 L14,23 L12,17 L13,6 L9,1 L9,-4 L5,-6 L-8,-4 L-13,-8 L-17,-14 Z"/><path d="M44,25 L47,25 L50,15 L49,12 L44,16 Z"/></g><g class="region" data-continent="Australia and Asia-Pacific" role="button" tabindex="0" aria-pressed="false" aria-label="Australia and Asia-Pacific: 2 venues"><title>Australia and Asia-Pacific: 2 venues</title><path d="M28,-41 L36,-36 L35,-32 L34,-28 L43,-13 L52,-15 L57,-20 L60,-23 L67,-24 L72,-20 L77,-8 L80,-15 L88,-22 L92,-21 L98,-16 L100,-8 L103,-1 L105,-10 L109,-12 L108,-21 L117,-23 L122,-30 L121,-38 L126,-37 L129,-35 L130,-43 L140,-48 L142,-54 L135,-55 L141,-59 L155,-59 L163,-61 L178,-64 L180,-69 L160,-70 L140,-73 L113,-76 L100,-78 L80,-73 L68,-70 L60,-68 L60,-55 L52,-47 L48,-42 L40,-41 Z"/><path d="M130,-31 L135,-34 L141,-38 L142,-45 L140,-41 L133,-34 Z"/><path d="M95,-5 L98,-4 L106,6 L103,5 Z"/><path d="M109,-1 L117,-7 L119,-1 L116,4 L110,3 Z"/><path d="M106,6 L115,8 L114,9 L106,7 Z"/><path d="M131,1 L141,3 L150,10 L141,9 L138,5 Z"/><path d="M120,-18 L122,-18 L126,-7 L122,-7 Z"/><path d="M114,22 L122,17 L130,12 L137,12 L142,11 L146,19 L153,26 L151,34 L146,39 L140,38 L135,35 L129,32 L115,34 Z"/><path d="M172,35 L178,38 L174,41 L167,46 L171,44 Z"/><text x="100" y="-45">2</text></g></svg>
 <div class="mapside"><button type="button" class="region-btn" data-continent="Online" aria-pressed="false">Online (1)</button>
 <button type="button" id="all-continents">All continents</button>
 <p class="note">Click a continent to show only its venues; click more to add them.</p></div></div>
@@ -125,7 +127,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Timișoara, Romania</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">06.–09.04.2027</td>
-        <td class="call"><div class="cl st-soon" data-cat="papers"><span class="kind">papers</span> <strong>30.10.2026</strong> <span class="days" data-deadline="2026-10-30">in 7 days</span><div class="note">abstracts; preliminary papers 07.12.2026</div></div><div class="cl st-soon" data-cat="workshops"><span class="kind">workshops</span> <strong>07.12.2026</strong> <span class="days" data-deadline="2026-12-07">in 45 days</span><div class="note">workshops, panels and posters</div></div><div class="cl st-closed" data-cat="special"><span class="kind">special sessions</span> closed 08.10.2026</div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers" data-due="2026-10-30" data-live="1"><span class="kind">papers</span> <strong>30.10.2026</strong> <span class="days" data-deadline="2026-10-30">in 7 days</span><div class="note">abstracts; preliminary papers 07.12.2026</div></div><div class="cl st-soon" data-cat="workshops" data-due="2026-12-07" data-live="1"><span class="kind">workshops</span> <strong>07.12.2026</strong> <span class="days" data-deadline="2026-12-07">in 45 days</span><div class="note">workshops, panels and posters</div></div><div class="cl st-closed" data-cat="special" data-due="2026-10-08" data-live="0"><span class="kind">special sessions</span> closed 08.10.2026</div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="cand ok" title="s &amp; Information Oct 08, 2026 Alternative Session Proposal Submission (Special Session) Oct 26, 2026 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission">30.10.2026 <span class="muted">near “special session”</span></span><br><span class="cand ok" title="6 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission of Proposals for Workshops, Panels, and Posters Jan 11, 2027 Paper Decision Notifications Feb 15,">07.12.2026 <span class="muted">near “abstract”</span></span><br><span class="cand" title="ers Jan 11, 2027 Paper Decision Notifications Feb 15, 2027 Final Camera-Ready Manuscript Deadline, Author Registration Deadline, Advanced Registration Deadline Apr 05, 2027 — Apr 09, 2027 EDUCON 2027 Conference About IEEE EDUCON 2027 The IEEE Global Engineering Education Conference (EDUCON) is one of the flagship conferences of th">05.04.2027 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://educon-conference.org/2027">website</a><br><a href="https://educon-conference.org/2027/authors/call-for-papers">call</a></td>
       </tr>
@@ -136,7 +138,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Tampere Hall, Tampere, Finland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">fi</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">proceedings: fi</div></td>
         <td class="nowrap">21.–23.04.2027</td>
-        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special"><span class="kind">presentations</span> <strong>02.11.2026</strong> <span class="days" data-deadline="2026-11-02">in 10 days</span><div class="note">one call for ITK Forum, Arena, Workshop (hands-on) and Poster</div></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special" data-due="2026-11-02" data-live="1"><span class="kind">presentations</span> <strong>02.11.2026</strong> <span class="days" data-deadline="2026-11-02">in 10 days</span><div class="note">one call for ITK Forum, Arena, Workshop (hands-on) and Poster</div></div></td>
         <td class="crawl"><span class="cand ok" title="Technology in Education Conference 2027 Tampere Hall Tampere, Finland, April 21-23, 2027 Conference web page https://itk-konferenssi.fi/en Submission deadline November 2, 2026 Topics: educational technology artificial intelligence in education ITK2027 – A New Contract for Learning 21–23 April 2027 | Tampere Hall, Tampere, Finland Cal">02.11.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://easychair.org/cfp/ITK2027">website</a></td>
       </tr>
@@ -147,7 +149,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Rome, Italy (unconfirmed)</td>
         <td class="nowrap"><span class="lang">en</span></td>
         <td class="nowrap">April 2027</td>
-        <td class="call"><div class="cl st-soon" data-cat="papers"><span class="kind">papers</span> <strong>17.11.2026</strong> <span class="days" data-deadline="2026-11-17">in 25 days</span><div class="note">second round (position/regular papers) 21.12.2026</div></div><div class="cl st-soon" data-cat="workshops"><span class="kind">workshops</span> <strong>27.11.2026</strong> <span class="days" data-deadline="2026-11-27">in 35 days</span><div class="note">proposals for new workshops, https://csedu.scitevents.org/Workshops.aspx</div></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers" data-due="2026-11-17" data-live="1"><span class="kind">papers</span> <strong>17.11.2026</strong> <span class="days" data-deadline="2026-11-17">in 25 days</span><div class="note">second round (position/regular papers) 21.12.2026</div></div><div class="cl st-soon" data-cat="workshops" data-due="2026-11-27" data-live="1"><span class="kind">workshops</span> <strong>27.11.2026</strong> <span class="days" data-deadline="2026-11-27">in 35 days</span><div class="note">proposals for new workshops, https://csedu.scitevents.org/Workshops.aspx</div></div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="cand ok" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Educa">17.11.2026 <span class="muted">near “paper submission”</span></span><br><span class="cand ok" title="ar Papers Paper Submission: December 21, 2026 Authors Notification: February 15, 2027 Camera Ready and Registration: March 1, 2027 Workshops Workshop Proposal: November 27, 2026 Paper Submission: February 16, 2027 Authors Notification: March 2, 2027 Camera Ready and Registration: March 10, 2027 Special Sessions Special Session Proposal">27.11.2026 <span class="muted">near “paper submission”</span></span><br><span class="cand" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Education, is a yearly meeting place for presenting and di">21.12.2026 <span class="muted">near “paper submission”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://csedu.scitevents.org/">website</a><br><a href="https://csedu.scitevents.org/CallForPapers.aspx">call</a></td>
       </tr>
@@ -158,7 +160,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>London, UK</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">08.–11.06.2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">contributions</span> typically 15.12.2026 <span class="muted">(last: 15.12.2024)</span><div class="note">the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special" data-due="2026-12-15" data-live="1"><span class="kind">contributions</span> typically 15.12.2026 <span class="muted">(last: 15.12.2024)</span><div class="note">the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en">previous edition</a></td>
       </tr>
@@ -169,7 +171,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>University of Glasgow, Scotland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">12.–14.07.2027</td>
-        <td class="call"><div class="cl st-open" data-cat="papers"><span class="kind">papers</span> <strong>18.01.2027</strong> <span class="days" data-deadline="2027-01-18">in 87 days</span><div class="note">abstracts 11.01.2027; dates provisional</div></div><div class="cl st-expected" data-cat="workshops"><span class="kind">working groups</span> typically 11.01.2027 <span class="muted">(last: 11.01.2026)</span><div class="note">2-page proposal by up to four leaders; groups meet 09–11.07.</div></div></td>
+        <td class="call"><div class="cl st-open" data-cat="papers" data-due="2027-01-18" data-live="1"><span class="kind">papers</span> <strong>18.01.2027</strong> <span class="days" data-deadline="2027-01-18">in 87 days</span><div class="note">abstracts 11.01.2027; dates provisional</div></div><div class="cl st-expected" data-cat="workshops" data-due="2027-01-11" data-live="1"><span class="kind">working groups</span> typically 11.01.2027 <span class="muted">(last: 11.01.2026)</span><div class="note">2-page proposal by up to four leaders; groups meet 09–11.07.</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://iticse.acm.org/2027/">website</a><br><a href="https://iticse.acm.org/2027/call-for-papers/">call</a></td>
       </tr>
@@ -180,7 +182,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>several German sites plus online</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">June 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 16.02.2027 <span class="muted">(last: 16.02.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special" data-due="2027-02-16" data-live="1"><span class="kind">sessions</span> typically 16.02.2027 <span class="muted">(last: 16.02.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://festival.hfd.digital">website</a></td>
       </tr>
@@ -191,7 +193,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2026 Bauhaus-Universität Weimar)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><div class="note">no proceedings</div></td>
         <td class="nowrap">autumn 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 01.03.2027 <span class="muted">(last: 01.03.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special" data-due="2027-03-01" data-live="1"><span class="kind">sessions</span> typically 01.03.2027 <span class="muted">(last: 01.03.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://sessionize.com/turn-conference-26">previous edition</a></td>
       </tr>
@@ -202,7 +204,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>PH St. Gallen, Rorschach on Lake Constance, Switzerland</td>
         <td class="nowrap"><span class="lang">de</span><span class="lang">en</span></td>
         <td class="nowrap">31.08.–02.09.2027</td>
-        <td class="call"><div class="cl st-open" data-cat="workshops"><span class="kind">workshops</span> <strong>03.03.2027</strong> <span class="days" data-deadline="2027-03-03">in 131 days</span><div class="note">workshops and tutorials, notification 24.03.2027</div></div><div class="cl st-open" data-cat="papers"><span class="kind">abstracts</span> <strong>01.04.2027</strong> <span class="days" data-deadline="2027-04-01">in 160 days</span><div class="note">abstracts for short and long papers</div></div><div class="cl st-open" data-cat="papers"><span class="kind">papers</span> <strong>07.04.2027</strong> <span class="days" data-deadline="2027-04-07">in 166 days</span><div class="note">short and long papers, notification 05.05.2027</div></div><div class="cl st-open" data-cat="posters"><span class="kind">posters demos</span> <strong>19.05.2027</strong> <span class="days" data-deadline="2027-05-19">in 208 days</span><div class="note">notification 09.06.2027</div></div><div class="cl st-open" data-cat=""><span class="kind">artifacts</span> <strong>01.06.2027</strong> <span class="days" data-deadline="2027-06-01">in 221 days</span><div class="note">notification 30.06.2027</div></div></td>
+        <td class="call"><div class="cl st-open" data-cat="workshops" data-due="2027-03-03" data-live="1"><span class="kind">workshops</span> <strong>03.03.2027</strong> <span class="days" data-deadline="2027-03-03">in 131 days</span><div class="note">workshops and tutorials, notification 24.03.2027</div></div><div class="cl st-open" data-cat="papers" data-due="2027-04-01" data-live="1"><span class="kind">abstracts</span> <strong>01.04.2027</strong> <span class="days" data-deadline="2027-04-01">in 160 days</span><div class="note">abstracts for short and long papers</div></div><div class="cl st-open" data-cat="papers" data-due="2027-04-07" data-live="1"><span class="kind">papers</span> <strong>07.04.2027</strong> <span class="days" data-deadline="2027-04-07">in 166 days</span><div class="note">short and long papers, notification 05.05.2027</div></div><div class="cl st-open" data-cat="posters" data-due="2027-05-19" data-live="1"><span class="kind">posters demos</span> <strong>19.05.2027</strong> <span class="days" data-deadline="2027-05-19">in 208 days</span><div class="note">notification 09.06.2027</div></div><div class="cl st-open" data-cat="" data-due="2027-06-01" data-live="1"><span class="kind">artifacts</span> <strong>01.06.2027</strong> <span class="days" data-deadline="2027-06-01">in 221 days</span><div class="note">notification 30.06.2027</div></div></td>
         <td class="crawl"><span class="cand ok" title="03.03.2027 Einreichung von Workshops / Tutorials">03.03.2027 <span class="muted">near “einreichung von workshops”</span></span><br><span class="cand ok" title="07.04.2027 Einreichung von Kurz- und Langbeiträgen">07.04.2027 <span class="muted">near “einreichung von kurz”</span></span><br><span class="cand ok" title="19.05.2027 Einreichung von Poster- und Demo-Beiträgen">19.05.2027 <span class="muted">near “einreichung von poster”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://delfi-tagung.de/2027/">website</a></td>
       </tr>
@@ -213,7 +215,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2026 Open Universiteit, The Hague)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">October 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">abstracts</span> typically 27.05.2027 <span class="muted">(last: 27.05.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers" data-due="2027-05-27" data-live="1"><span class="kind">abstracts</span> typically 27.05.2027 <span class="muted">(last: 27.05.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml">previous edition</a></td>
       </tr>
@@ -224,7 +226,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Berlin, Germany</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">early December 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 29.05.2027 <span class="muted">(last: 29.05.2026)</span><div class="note">OEB26 (2.–4.12.2026) call closed 29.05.2026</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special" data-due="2027-05-29" data-live="1"><span class="kind">sessions</span> typically 29.05.2027 <span class="muted">(last: 29.05.2026)</span><div class="note">OEB26 (2.–4.12.2026) call closed 29.05.2026</div></div></td>
         <td class="crawl"><span class="cand" title="Exhibition Sponsors Exhibitors Insights News Media Photos Videos Speaker Requirements and Guidelines To join us as a speaker at OEB (Online Educa Berlin) on 2-4 December 2026, make sure to submit your proposal by 29 May 2026.">04.12.2026 <span class="muted">near “submit”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.oeb.global/node/10084">previous edition</a></td>
       </tr>
@@ -235,7 +237,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Koli, Finland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">early November 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 12.07.2027 <span class="muted">(last: 12.07.2026)</span><div class="note">full and discussion papers; one pre-conference workshop</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers" data-due="2027-07-12" data-live="1"><span class="kind">papers</span> typically 12.07.2027 <span class="muted">(last: 12.07.2026)</span><div class="note">full and discussion papers; one pre-conference workshop</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.kolicalling.fi/">website</a></td>
       </tr>
@@ -289,7 +291,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>Hyatt Regency Riverfront, Savannah, USA</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">03.–05.03.2027</td>
-        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special"><span class="kind">proposals</span> <strong>23.10.2026</strong> <span class="days" data-deadline="2026-10-23">in 0 days</span></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special" data-due="2026-10-23" data-live="1"><span class="kind">proposals</span> <strong>23.10.2026</strong> <span class="days" data-deadline="2026-10-23">in 0 days</span></div></td>
         <td class="crawl"><span class="cand ok" title="Read More… Proposal Submissions Call for Proposals Opens : August 10, 2026 Proposal Submission Deadline: October 23, 2026 Notice of Proposal Acceptance: Notifications sent on December 7, 2026 Confirmation of Proposal Acceptance : January 15, 2027 To remain in the Conference Progra">23.10.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals">website</a></td>
       </tr>
@@ -300,7 +302,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced, usually North America (2026 Paphos)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">October 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="workshops special"><span class="kind">workshops special sessions</span> typically 23.02.2027 <span class="muted">(last: 23.02.2026)</span><div class="note">alternative sessions: workshops, special sessions, panels</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="workshops special" data-due="2027-02-23" data-live="1"><span class="kind">workshops special sessions</span> typically 23.02.2027 <span class="muted">(last: 23.02.2026)</span><div class="note">alternative sessions: workshops, special sessions, panels</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://fie-conference.org/2026">previous edition</a></td>
       </tr>
@@ -311,7 +313,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2026 UNC Wilmington)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">November 2027</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 16.08.2027 <span class="muted">(last: 16.08.2026)</span></div><div class="cl st-expected" data-cat="special"><span class="kind">special sessions</span> typically 23.09.2027 <span class="muted">(last: 23.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers" data-due="2027-08-16" data-live="1"><span class="kind">papers</span> typically 16.08.2027 <span class="muted">(last: 16.08.2026)</span></div><div class="cl st-expected" data-cat="special" data-due="2027-09-23" data-live="1"><span class="kind">special sessions</span> typically 23.09.2027 <span class="muted">(last: 23.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://easychair.org/cfp/SIGCITE-26">previous edition</a></td>
       </tr></tbody>
@@ -385,7 +387,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2027: USTP St. Pölten, Austria)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">contributions</span> typically 15.08.2027 <span class="muted">(last: 15.08.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special" data-due="2027-08-15" data-live="1"><span class="kind">contributions</span> typically 15.08.2027 <span class="muted">(last: 15.08.2026)</span></div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://dghd.ustp.at/">previous edition</a></td>
       </tr>
@@ -396,7 +398,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2027: Messe Karlsruhe, Germany)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-unknown" data-cat="papers workshops posters special"><span class="kind">congress</span> date unknown</div></td>
+        <td class="call"><div class="cl st-unknown" data-cat="papers workshops posters special" data-due="" data-live="1"><span class="kind">congress</span> date unknown</div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.learntec.de/">previous edition</a></td>
       </tr></tbody>
@@ -417,7 +419,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2027: SAFE Credit Union Convention Center, Sacramento, USA)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="special"><span class="kind">special sessions</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="posters"><span class="kind">posters lightning talks</span> typically 30.09.2027 <span class="muted">(last: 30.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers" data-due="2027-07-03" data-live="1"><span class="kind">papers</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="special" data-due="2027-07-03" data-live="1"><span class="kind">special sessions</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="posters" data-due="2027-09-30" data-live="1"><span class="kind">posters lightning talks</span> typically 30.09.2027 <span class="muted">(last: 30.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://2027.sigcse-ts.acm.org/">previous edition</a></td>
       </tr></tbody>
@@ -438,7 +440,7 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td>not announced (2027: Recife, Brazil)</td>
         <td class="nowrap"><span class="lang">en</span><div class="note">talks: en es pt</div></td>
         <td class="nowrap">March 2028</td>
-        <td class="call"><div class="cl st-expected" data-cat="workshops"><span class="kind">workshops</span> typically 21.09.2027 <span class="muted">(last: 21.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="workshops" data-due="2027-09-21" data-live="1"><span class="kind">workshops</span> typically 21.09.2027 <span class="muted">(last: 21.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.solaresearch.org/events/lak/lak27/">previous edition</a></td>
       </tr></tbody>
@@ -484,7 +486,7 @@ document.querySelectorAll('.callsort').forEach(s => s.addEventListener('change',
 }));
 // Continents picked on the map; empty means all.
 const picked = new Set();
-const toggles = document.querySelectorAll('.region, .region-btn');
+const toggles = document.querySelectorAll('.region:not(.empty), .region-btn:not([disabled])');
 function apply() {
   const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {
@@ -502,7 +504,6 @@ function apply() {
 }
 function toggle(name) { picked.has(name) ? picked.delete(name) : picked.add(name); apply(); }
 toggles.forEach(el => {
-  if (el.classList.contains('empty')) return;
   el.addEventListener('click', () => toggle(el.dataset.continent));
   el.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(el.dataset.continent); }
@@ -516,12 +517,26 @@ document.querySelectorAll('.days[data-deadline]').forEach(el => {
   const d = new Date(el.dataset.deadline + 'T00:00:00');
   const days = Math.round((d - today) / 86400000);
   const line = el.closest('.cl');
-  if (days < 0) { el.textContent = 'passed'; line.className = 'cl st-closed'; }
+  if (days < 0) { el.textContent = 'passed'; line.className = 'cl st-closed'; line.dataset.live = '0'; }
   else {
     el.textContent = days === 0 ? 'today' : `in ${days} days`;
     line.className = days <= 45 ? 'cl st-soon' : 'cl st-open';
   }
 });
+// A deadline that passed since the build no longer counts: rebuild each row's sort keys from its
+// live calls, the same way the build does, then sort and filter again.
+const cats = [...document.querySelector('.callsort').options].map(o => o.value);
+document.querySelectorAll('tbody tr').forEach(tr => {
+  const live = [...tr.querySelectorAll('.cl')].filter(l => l.dataset.live === '1');
+  cats.forEach(cat => {
+    const key = 'dl' + cat[0].toUpperCase() + cat.slice(1);
+    const lines = cat === 'all' ? live : live.filter(l => l.dataset.cat.split(' ').includes(cat));
+    if (!lines.length && cat !== 'all') { delete tr.dataset[key]; return; }
+    tr.dataset[key] = lines.map(l => l.dataset.due).filter(Boolean).sort()[0] || '9999-12-31';
+  });
+});
+sortRows();
+apply();
 </script>
 </body>
 </html>

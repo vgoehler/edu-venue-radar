@@ -210,3 +210,9 @@ def test_validate_allows_only_web_urls():
     problems = registry.validate({"series": [bad]})
     assert "j: url_pattern must start with https:// or http://, not 'javascript:alert({year})'" in problems
     assert "j 2027: call_url must start with https:// or http://, not 'javascript:alert(1)'" in problems
+
+
+def test_validate_reports_unknown_call_kinds():
+    data = {"series": [{"id": "k", "name": "K", "continent": "Online", "editions": {2027: {"calls": {"workshps": {}}}}}]}
+    problems = registry.validate(data)
+    assert any(p.startswith("k 2027: unknown call kind 'workshps', known are abstracts, artifacts") for p in problems)

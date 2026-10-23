@@ -2,11 +2,14 @@
   "id": "sotl-commons",
   "edition": 2027,
   "url": "https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals",
-  "checked": "2026-10-23T19:30:15+00:00",
+  "checked": "2026-10-23T19:38:54+00:00",
   "status": 200,
   "final_url": "https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals",
-  "sha256": "e4f01ae7c84f2274eb76b28a375bf14e0dcabfc4c830cfae52c18bb053c29535",
-  "sha256_of": "date-lines",
+  "sha256": "bf2ddafe7dfdd95a0e4b533dad522e2c8f3bc7ed691cae602b9948bf363bcfb7",
+  "sha256_of": "date-lines-per-page",
+  "hashed_pages": [
+    "https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals"
+  ],
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:31+00:00",
   "candidates": [

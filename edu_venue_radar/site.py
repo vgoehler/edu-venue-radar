@@ -2,25 +2,17 @@
 
 import json
 from collections import defaultdict
+from dataclasses import dataclass, field
 from datetime import date
 from html import escape
 from pathlib import Path
 
-from .registry import CONTINENTS, STATUS_ORDER, Call, Edition, current_edition, is_web_url
+from .registry import CALL_CATEGORIES, CONTINENTS, OPEN_CALLS, STATUS_ORDER, Call, Edition, current_edition, is_web_url
 from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
 from .worldmap import world_map
 
 SOON_DAYS = 45
-# Which call kinds count for the call filter in the table head. A single open call for every
-# format ("contributions", "sessions", ...) counts for all of them.
-CALL_CATEGORIES = {
-    "papers": {"papers", "abstracts"},
-    "workshops": {"workshops", "workshops-special-sessions", "working-groups"},
-    "posters": {"posters-demos", "posters-lightning-talks"},
-    "special": {"special-sessions", "workshops-special-sessions"},
-}
 CATEGORY_LABELS = {"papers": "papers", "workshops": "workshops", "posters": "posters", "special": "special sessions"}
-OPEN_CALLS = {"contributions", "proposals", "presentations", "sessions", "congress"}
 NO_DATE = "9999-12-31"
 EVIDENCE = {
     "confirmed": "confirmed for this edition",
@@ -57,8 +49,9 @@ def sort_keys(ed: Edition, today: date) -> dict[str, str]:
     """
     nxt = ed.next_deadline(today)
     keys = {"conf": ed.approx_start.isoformat(), "dl-all": nxt.isoformat() if nxt else NO_DATE}
+    live_calls = ed.live_calls(today)
     for cat in CALL_CATEGORIES:
-        live = [c for c in ed.live_calls(today) if cat in categories(c.kind)]
+        live = [c for c in live_calls if cat in categories(c.kind)]
         if live:
             dates = [d for c in live if (d := c.effective_deadline())]
             keys[f"dl-{cat}"] = min(dates).isoformat() if dates else NO_DATE
@@ -83,7 +76,10 @@ def call_line(call: Call, today: date) -> str:
         when = f"closed {fmt(call.deadline)}".strip()
     else:
         cls, when = "unknown", "date unknown"
-    return f'<div class="cl st-{cls}" data-cat="{" ".join(categories(call.kind))}">{kind} {when}{note}</div>'
+    due = call.effective_deadline()
+    # data-due and data-live let the page re-sort when a deadline passes between weekly builds.
+    data = f'data-cat="{" ".join(categories(call.kind))}" data-due="{due.isoformat() if due else ""}" data-live="{int(status != "closed")}"'
+    return f'<div class="cl st-{cls}" {data}>{kind} {when}{note}</div>'
 
 
 def calls_cell(ed: Edition, today: date) -> str:
@@ -132,6 +128,8 @@ def crawl_cell(crawl: CrawlRecord | None, ed: Edition, series: SeriesData) -> st
     parts = []
     confirmed = {c.deadline.isoformat() for c in ed.calls if c.deadline}
     checked = crawl.get("checked", "")[:10]
+    if crawl.get("warning"):
+        parts.append(f'<span class="warn">{escape(str(crawl["warning"]))}</span>')
     if crawl.get("error"):
         parts.append(f'<span class="warn">unreachable ({escape(str(crawl["error"]))})</span>')
     if changed_on := crawl.get("changed_on"):
@@ -151,65 +149,79 @@ def crawl_cell(crawl: CrawlRecord | None, ed: Edition, series: SeriesData) -> st
     return "<br>".join(parts)
 
 
-def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank | None, today: date) -> tuple[date, str]:
-    sort_date = ed.next_deadline(today)
-    topics = " ".join(series.get("topics", []))
-    chips = "".join(f'<span class="chip">{escape(t)}</span>' for t in series.get("topics", []))
-    kind = f'<div class="note">{escape(series["kind"])}</div>' if series.get("kind") else ""
+def rank_cell(series: SeriesData, rank: Rank | None) -> str:
     if rank:
-        rank_html = escape(rank.get("rank", ""))
-    elif series.get("icore"):
-        rank_html = '<span class="muted">not looked up</span>'
-    else:
-        rank_html = '<span class="muted">not listed</span>'
-    link_label = "previous edition" if ed.url_is_fallback else "website"
-    link = f'<a href="{escape(ed.url)}">{link_label}</a>' if is_web_url(ed.url) else ""
+        return escape(rank.get("rank", ""))
+    if series.get("icore"):
+        return '<span class="muted">not looked up</span>'
+    return '<span class="muted">not listed</span>'
+
+
+def links_cell(ed: Edition) -> str:
+    """Edition page and call page; anything that is not an http(s) link is left out."""
+    links = []
+    if is_web_url(ed.url):
+        links.append(f'<a href="{escape(ed.url)}">{"previous edition" if ed.url_is_fallback else "website"}</a>')
     if is_web_url(ed.call_url):
-        link += f'<br><a href="{escape(ed.call_url)}">call</a>'
+        links.append(f'<a href="{escape(ed.call_url)}">call</a>')
+    return "<br>".join(links)
+
+
+def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank | None, today: date) -> tuple[date, str]:
+    topics = series.get("topics", [])
+    chips = "".join(f'<span class="chip">{escape(t)}</span>' for t in topics)
+    kind = f'<div class="note">{escape(series["kind"])}</div>' if series.get("kind") else ""
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
     data = " ".join(f'data-{k}="{v}"' for k, v in sort_keys(ed, today).items())
+    langs = " ".join(series.get("languages", []))
     html = f"""
-      <tr class="ev-{ed.evidence}" {data} data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
+      <tr class="ev-{ed.evidence}" {data} data-topics="{escape(" ".join(topics))}" data-langs="{escape(langs)}">
         <td><span class="sr">{EVIDENCE[ed.evidence]}: </span><strong>{escape(series["name"])} {ed.year}</strong><div class="note">{escape(series.get("full_name", ""))}</div>{chips}{guessed}</td>
         <td>{escape(series.get("organizer", ""))}{kind}</td>
-        <td class="rank">{rank_html}</td>
+        <td class="rank">{rank_cell(series, rank)}</td>
         <td>{escape(ed.location or "")}</td>
         <td class="nowrap">{languages_cell(series)}</td>
         <td class="nowrap">{escape(conference_text(ed))}</td>
         <td class="call">{calls_cell(ed, today)}</td>
         <td class="crawl">{crawl_cell(crawl, ed, series)}</td>
-        <td>{link}</td>
+        <td>{links_cell(ed)}</td>
       </tr>"""
-    return (sort_date or date.max), html
+    return (ed.next_deadline(today) or date.max), html
 
 
-def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, today: date) -> Path:
-    icore_meta: RankFile | None = json.loads(icore_file.read_text()) if icore_file.exists() else None
-    ranks = icore_meta["ranks"] if icore_meta else {}
-    groups: dict[int, dict[str, list[tuple[date, str]]]] = defaultdict(lambda: defaultdict(list))
-    topics: set[str] = set()
-    languages: set[str] = set()
-    counts: dict[str, int] = defaultdict(int)
+@dataclass
+class Collected:
+    """Rows grouped by year and continent, plus what the filters and the map offer."""
+
+    groups: dict[int, dict[str, list[tuple[date, str]]]] = field(default_factory=lambda: defaultdict(lambda: defaultdict(list)))
+    topics: set[str] = field(default_factory=set)
+    languages: set[str] = field(default_factory=set)
+    counts: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+
+
+def _crawl_of(crawl_dir: Path, series_id: str, year: int) -> CrawlRecord | None:
+    """The last crawl of the series, if it was of this edition."""
+    path = crawl_dir / f"{series_id}.json"
+    crawl: CrawlRecord | None = json.loads(path.read_text()) if path.exists() else None
+    return crawl if crawl and crawl.get("edition") == year else None
+
+
+def collect(registry: RegistryData, crawl_dir: Path, ranks: dict[str, Rank], today: date) -> Collected:
+    out = Collected()
     for series in registry["series"]:
         ed = current_edition(series, today)
-        crawl_file = crawl_dir / f"{series['id']}.json"
-        crawl: CrawlRecord | None = json.loads(crawl_file.read_text()) if crawl_file.exists() else None
-        if crawl and crawl.get("edition") != ed.year:
-            crawl = None
-        groups[ed.year][series.get("continent", "Online")].append(row(series, ed, crawl, ranks.get(series["id"]), today))
-        topics.update(series.get("topics", []))
-        languages.update(series.get("languages", []))
-        counts[series.get("continent", "Online")] += 1
+        continent = series.get("continent", "Online")
+        crawl = _crawl_of(crawl_dir, series["id"], ed.year)
+        out.groups[ed.year][continent].append(row(series, ed, crawl, ranks.get(series["id"]), today))
+        out.topics.update(series.get("topics", []))
+        out.languages.update(series.get("languages", []))
+        out.counts[continent] += 1
+    return out
 
-    call_options = '<option value="all">all calls</option>' + "".join(
-        f'<option value="{cat}">{label}</option>' for cat, label in CATEGORY_LABELS.items()
-    )
-    sections = []
-    for year in sorted(groups):
-        blocks = []
-        for continent in sorted(groups[year], key=lambda c: CONTINENTS.index(c) if c in CONTINENTS else 99):
-            rows = "".join(h for _, h in sorted(groups[year][continent], key=lambda r: r[0]))
-            blocks.append(f"""
+
+def table_html(continent: str, rows: list[tuple[date, str]], call_options: str) -> str:
+    body = "".join(h for _, h in sorted(rows, key=lambda r: r[0]))
+    return f"""
     <div class="cblock" data-continent="{escape(continent)}">
     <h3>{escape(continent)}</h3>
     <div class="scroll"><table>
@@ -217,27 +229,40 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
       <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
       <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
       <select class="callsort" aria-label="Show and sort by the deadline of">{call_options}</select></th><th>Crawler</th><th>Link</th></tr></thead>
-      <tbody>{rows}</tbody>
+      <tbody>{body}</tbody>
     </table></div>
-    </div>""")
-        sections.append(f"<section><h2>Conferences in {year}</h2>{''.join(blocks)}</section>")
+    </div>"""
 
-    filters = "".join(f'<label><input type="checkbox" value="{escape(t)}" checked> {escape(t)}</label>' for t in sorted(topics))
-    language_filters = "".join(
-        f'<label><input type="checkbox" value="{escape(c)}" checked> {escape(c)}</label>' for c in sorted(languages)
+
+def checkboxes(values: set[str]) -> str:
+    return "".join(f'<label><input type="checkbox" value="{escape(v)}" checked> {escape(v)}</label>' for v in sorted(values))
+
+
+def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, today: date) -> Path:
+    icore_meta: RankFile | None = json.loads(icore_file.read_text()) if icore_file.exists() else None
+    found = collect(registry, crawl_dir, icore_meta["ranks"] if icore_meta else {}, today)
+    call_options = '<option value="all">all calls</option>' + "".join(
+        f'<option value="{cat}">{label}</option>' for cat, label in CATEGORY_LABELS.items()
     )
-    source = escape(icore_meta["source"] if icore_meta else "ICORE")
+    sections = []
+    for year in sorted(found.groups):
+        by_continent = found.groups[year]
+        order = sorted(by_continent, key=lambda c: CONTINENTS.index(c) if c in CONTINENTS else len(CONTINENTS))
+        tables = "".join(table_html(c, by_continent[c], call_options) for c in order)
+        sections.append(f"<section><h2>Conferences in {year}</h2>{tables}</section>")
+    online = found.counts.get("Online", 0)
     page = TEMPLATE.format(
         today=fmt(today),
         sections="".join(sections),
-        filters=filters,
-        worldmap=world_map(counts),
-        online=counts.get("Online", 0),
-        language_filters=language_filters,
+        filters=checkboxes(found.topics),
+        worldmap=world_map(found.counts),
+        online=online,
+        online_disabled="" if online else " disabled",
+        language_filters=checkboxes(found.languages),
         ev_confirmed=EVIDENCE["confirmed"],
         ev_partial=EVIDENCE["partial"],
         ev_guessed=EVIDENCE["guessed"],
-        icore_source=source,
+        icore_source=escape(icore_meta["source"] if icore_meta else "ICORE"),
         soon=SOON_DAYS,
     )
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -262,13 +287,13 @@ TEMPLATE = """<!doctype html>
   :root:not([data-theme="light"]) {{
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
   }}
 }}
 :root[data-theme="dark"] {{
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #2f6aa3;
 }}
 * {{ box-sizing: border-box; }}
 body {{ margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -302,15 +327,17 @@ tbody tr td:first-child::before {{ content: ""; position: absolute; left: 0; top
 .region path {{ fill: var(--land); stroke: var(--bg); stroke-width: .4; transition: fill .15s; }}
 .region {{ cursor: pointer; outline: none; }}
 .region text {{ font-size: 9px; font-weight: 600; fill: var(--fg); text-anchor: middle; dominant-baseline: middle; pointer-events: none; }}
-.region:hover path, .region:focus-visible path {{ fill: var(--land-hover); }}
 .region.empty {{ cursor: default; }}
 .region.empty path {{ fill: var(--line); }}
 .worldmap.picking .region path {{ fill: var(--line); }}
+.worldmap .region:not(.empty):hover path, .worldmap .region:not(.empty):focus-visible path {{ fill: var(--land-hover); }}
 .worldmap .region[aria-pressed="true"] path {{ fill: var(--land-on); }}
+.worldmap .region:focus-visible path {{ stroke: var(--fg); stroke-width: 1.2; }}
 .worldmap .region[aria-pressed="true"] text {{ fill: #fff; }}
 .mapside {{ display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; }}
 .mapside button {{ font: inherit; font-size: .88rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 6px;
   background: var(--head); color: var(--fg); cursor: pointer; }}
+.mapside button:disabled {{ opacity: .5; cursor: default; }}
 .mapside button[aria-pressed="true"] {{ background: var(--land-on); border-color: var(--land-on); color: #fff; }}
 .lang {{ display: inline-block; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin: 0 4px 2px 0; font-size: .78rem; font-weight: 600; }}
 .lang.inferred {{ font-weight: 400; border-style: dashed; cursor: help; }}
@@ -347,7 +374,7 @@ footer {{ margin-top: 40px; color: var(--muted); font-size: .85rem; max-width: 8
 Teaching and Learning, with their calls, deadlines, organizers and rankings. Built {today}, crawled weekly.
 Deadlines due within {soon} days are marked red. Each series shows its next edition that still has an open call.</p>
 <div class="mapbox">{worldmap}
-<div class="mapside"><button type="button" class="region-btn" data-continent="Online" aria-pressed="false">Online ({online})</button>
+<div class="mapside"><button type="button" class="region-btn" data-continent="Online" aria-pressed="false"{online_disabled}>Online ({online})</button>
 <button type="button" id="all-continents">All continents</button>
 <p class="note">Click a continent to show only its venues; click more to add them.</p></div></div>
 <div class="filters" id="filters"><strong>Topics:</strong> {filters}</div>
@@ -397,7 +424,7 @@ document.querySelectorAll('.callsort').forEach(s => s.addEventListener('change',
 }}));
 // Continents picked on the map; empty means all.
 const picked = new Set();
-const toggles = document.querySelectorAll('.region, .region-btn');
+const toggles = document.querySelectorAll('.region:not(.empty), .region-btn:not([disabled])');
 function apply() {{
   const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {{
@@ -415,7 +442,6 @@ function apply() {{
 }}
 function toggle(name) {{ picked.has(name) ? picked.delete(name) : picked.add(name); apply(); }}
 toggles.forEach(el => {{
-  if (el.classList.contains('empty')) return;
   el.addEventListener('click', () => toggle(el.dataset.continent));
   el.addEventListener('keydown', e => {{
     if (e.key === 'Enter' || e.key === ' ') {{ e.preventDefault(); toggle(el.dataset.continent); }}
@@ -429,12 +455,26 @@ document.querySelectorAll('.days[data-deadline]').forEach(el => {{
   const d = new Date(el.dataset.deadline + 'T00:00:00');
   const days = Math.round((d - today) / 86400000);
   const line = el.closest('.cl');
-  if (days < 0) {{ el.textContent = 'passed'; line.className = 'cl st-closed'; }}
+  if (days < 0) {{ el.textContent = 'passed'; line.className = 'cl st-closed'; line.dataset.live = '0'; }}
   else {{
     el.textContent = days === 0 ? 'today' : `in ${{days}} days`;
     line.className = days <= {soon} ? 'cl st-soon' : 'cl st-open';
   }}
 }});
+// A deadline that passed since the build no longer counts: rebuild each row's sort keys from its
+// live calls, the same way the build does, then sort and filter again.
+const cats = [...document.querySelector('.callsort').options].map(o => o.value);
+document.querySelectorAll('tbody tr').forEach(tr => {{
+  const live = [...tr.querySelectorAll('.cl')].filter(l => l.dataset.live === '1');
+  cats.forEach(cat => {{
+    const key = 'dl' + cat[0].toUpperCase() + cat.slice(1);
+    const lines = cat === 'all' ? live : live.filter(l => l.dataset.cat.split(' ').includes(cat));
+    if (!lines.length && cat !== 'all') {{ delete tr.dataset[key]; return; }}
+    tr.dataset[key] = lines.map(l => l.dataset.due).filter(Boolean).sort()[0] || '9999-12-31';
+  }});
+}});
+sortRows();
+apply();
 </script>
 </body>
 </html>
