@@ -136,3 +136,55 @@ def test_update_fails_on_an_error_page(tmp_path):
     with pytest.raises(icore.requests.HTTPError):
         icore.update(reg(tmp_path), out, date(2026, 10, 23), FakePortal(status=503))
     assert not out.exists()
+
+
+def test_validate_catches_placeholders_empty_editions_and_types():
+    data = {
+        "series": [
+            {"id": "a", "name": "A", "continent": "Online", "url_pattern": "https://a.org/{yaer}/", "editions": {}},
+            {
+                "id": "b",
+                "name": "B",
+                "continent": "Online",
+                "topics": "ai",
+                "editions": {2027: {"calls": {"papers": {"closed": "yes"}}}},
+            },
+        ]
+    }
+    problems = registry.validate(data)
+    assert "a: url_pattern has a placeholder other than {year} and {yy}: 'https://a.org/{yaer}/'" in problems
+    assert "a: no editions" in problems
+    assert "b: topics must be a list of words, not 'ai'" in problems
+    assert "b 2027 papers: closed must be true or false, not 'yes'" in problems
+
+
+def test_validate_reports_a_registry_without_series():
+    assert registry.validate({"series": []}) == ["registry has no series"]
+
+
+def test_load_refuses_a_file_without_a_mapping(tmp_path):
+    path = tmp_path / "registry.yaml"
+    path.write_text("")
+    with pytest.raises(ValueError, match="mapping"):
+        registry.load(path)
+
+
+def test_roll_keeps_the_usual_field_order(root):
+    run(root, "roll", "x")
+    data = registry.load(root / "registry.yaml")
+    assert list(data["series"][0]["editions"][2028])[:2] == ["url", "url_is_fallback"]
+
+
+def test_crawl_icore_and_update_commands(root, monkeypatch, capsys):
+    record = {"id": "x", "edition": 2027, "url": None, "checked": "2026-10-23T05:00:00+00:00", "status": 200}
+    monkeypatch.setattr(cli.crawl, "crawl", lambda *a, **k: [record])
+    monkeypatch.setattr(
+        cli.icore, "update", lambda *a, **k: {"source": "ICORE2026", "checked": "", "ranks": {"x": {"acronym": "X", "rank": "A"}}}
+    )
+    assert run(root, "crawl", "x") == 0
+    assert run(root, "icore") == 0
+    assert run(root, "update") == 0
+    out = capsys.readouterr().out
+    assert "x             200" in out
+    assert "x             A" in out
+    assert out.strip().endswith("index.html")

@@ -113,6 +113,42 @@ def test_crawl_keeps_old_findings_when_the_page_is_down(tmp_path):
     assert "sha256" in down
 
 
+def test_crawl_appends_the_separate_deadlines_page(tmp_path):
+    series = {**REG["series"][0], "deadlines_pattern": "https://a.org/{year}/dates", "url_pattern": None}
+    pages = {
+        "https://a.org/2027/": (200, "<p>Welcome</p>"),
+        "https://a.org/2027/dates": (200, "<p>Workshop proposals due 7 December 2026</p>"),
+    }
+    res = crawl.crawl_series(FakeSession(pages), series, date(2026, 10, 23), tmp_path)
+    assert res["deadlines_url"] == {"url": "https://a.org/2027/dates", "status": 200}
+    assert [c["when"] for c in res["candidates"]] == ["2026-12-07"]
+
+
+def test_crawl_skips_an_empty_deadlines_page(tmp_path):
+    series = {**REG["series"][0], "deadlines_pattern": "https://a.org/{year}/dates", "url_pattern": None}
+    pages = {"https://a.org/2027/": (200, "<p>Workshop proposals due 7 December 2026</p>")}
+    res = crawl.crawl_series(FakeSession(pages), series, date(2026, 10, 23), tmp_path)
+    assert res["deadlines_url"] == {"url": "https://a.org/2027/dates", "status": 404}
+    assert [c["when"] for c in res["candidates"]] == ["2026-12-07"]
+
+
+def test_crawl_of_an_edition_without_url(tmp_path):
+    series = {**REG["series"][1], "editions": {2027: {"when": "May 2027", "calls": {"papers": {"deadline": "2027-01-10"}}}}}
+    res = crawl.crawl_series(FakeSession({}), series, date(2026, 10, 23), tmp_path)
+    assert (res["url"], res["error"]) == (None, "no URL")
+
+
+class BrokenSession(FakeSession):
+    def get(self, url, **_):
+        raise crawl.requests.ConnectionError(url)
+
+
+def test_crawl_records_a_network_error_by_name(tmp_path):
+    res = crawl.crawl_series(BrokenSession({}), REG["series"][1], date(2026, 10, 23), tmp_path)
+    assert (res["status"], res["error"]) == (None, "ConnectionError")
+    assert "candidates" not in res
+
+
 def test_build_groups_by_year_and_marks_soon(tmp_path):
     crawl_dir = tmp_path / "crawl"
     crawl_dir.mkdir()

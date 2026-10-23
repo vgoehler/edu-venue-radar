@@ -21,6 +21,8 @@ packages = [{ include = "edu_venue_radar" }]
 pytest = ">=9.0.3"
 pytest-cov = "^6.0"
 ruff = "^0.12"
+mypy = "^2.4.0"
+types-requests = "^2.33.0.20261006"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -48,3 +50,9 @@ max-args = 6
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.11"
+# The package is checked strictly; the tests drive it with fakes and stay untyped.
+files = ["edu_venue_radar"]
+strict = true

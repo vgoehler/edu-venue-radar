@@ -8,10 +8,12 @@ looks like before anyone has entered it.
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
+from typing import cast
 
 from ruamel.yaml import YAML
 
 from .dates import month_of
+from .schema import CallData, DateValue, EditionData, RegistryData, SeriesData
 
 # How long after an expected (not confirmed) deadline we still treat a call as open.
 GRACE_DAYS = 14
@@ -37,6 +39,24 @@ SERIES_KEYS = {
 SERIES_REQUIRED = {"id", "name", "continent", "editions"}
 EDITION_KEYS = {"url", "url_is_fallback", "location", "start", "end", "when", "calls"}
 CALL_KEYS = {"deadline", "deadline_hint", "note", "closed"}
+LIST_FIELDS = {"topics", "keywords"}
+BOOL_FIELDS = {"url_is_fallback", "closed"}
+TEXT_FIELDS = {
+    "id",
+    "name",
+    "full_name",
+    "organizer",
+    "kind",
+    "icore",
+    "continent",
+    "url_pattern",
+    "deadlines_pattern",
+    "layout",
+    "url",
+    "location",
+    "when",
+    "note",
+}
 
 
 def _yaml() -> YAML:
@@ -47,17 +67,20 @@ def _yaml() -> YAML:
     return y
 
 
-def load(path: Path) -> dict:
+def load(path: Path) -> RegistryData:
     with path.open(encoding="utf-8") as fh:
-        return _yaml().load(fh)
+        data = _yaml().load(fh)
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} does not hold a mapping with a series list")
+    return cast(RegistryData, data)
 
 
-def save(data: dict, path: Path) -> None:
+def save(data: RegistryData, path: Path) -> None:
     with path.open("w", encoding="utf-8") as fh:
         _yaml().dump(data, fh)
 
 
-def to_date(value) -> date | None:
+def to_date(value: DateValue) -> date | None:
     if value is None or value == "":
         return None
     if isinstance(value, datetime):
@@ -146,9 +169,9 @@ def expected_from_hint(hint: date, conference: date) -> date:
     return guess
 
 
-def edition(series: dict, year: int) -> Edition:
+def edition(series: SeriesData, year: int) -> Edition:
     editions = series["editions"]
-    raw = editions[year] if year in editions else editions[str(year)]
+    raw: EditionData = (editions[year] if year in editions else editions[str(year)]) or {}
     ed = Edition(
         series_id=series["id"],
         year=int(year),
@@ -160,7 +183,7 @@ def edition(series: dict, year: int) -> Edition:
         when=raw.get("when"),
     )
     for kind, raw_call in (raw.get("calls") or {}).items():
-        c = raw_call or {}
+        c: CallData = raw_call or {}
         call = Call(
             kind=kind,
             deadline=to_date(c.get("deadline")),
@@ -174,7 +197,7 @@ def edition(series: dict, year: int) -> Edition:
     return ed
 
 
-def next_edition(series: dict, prev: Edition) -> Edition:
+def next_edition(prev: Edition) -> Edition:
     """The edition after `prev`, guessed from it until someone enters the real one."""
     year = prev.year + 1
     month = prev.approx_start.strftime("%B")
@@ -202,7 +225,7 @@ def next_edition(series: dict, prev: Edition) -> Edition:
     return ed
 
 
-def current_edition(series: dict, today: date) -> Edition:
+def current_edition(series: SeriesData, today: date) -> Edition:
     """The first edition with a call that is not over, synthesizing later ones as needed."""
     years = sorted(int(y) for y in series["editions"])
     ed = edition(series, years[0])
@@ -211,61 +234,107 @@ def current_edition(series: dict, today: date) -> Edition:
             return ed
         ed = edition(series, y)
     while ed.status(today) == "closed":
-        ed = next_edition(series, ed)
+        ed = next_edition(ed)
     return ed
 
 
-def roll(data: dict, series_id: str) -> int:
+def roll(data: RegistryData, series_id: str) -> int:
     """Append the next edition after the last entered one to the registry. Returns its year."""
     series = find(data, series_id)
     last = max(int(y) for y in series["editions"])
-    nxt = next_edition(series, edition(series, last))
-    entry: dict = {"url": nxt.url, "url_is_fallback": True, "location": nxt.location, "when": nxt.when}
-    calls = {c.kind: ({"deadline_hint": c.hint} if c.hint else {}) for c in nxt.calls}
+    nxt = next_edition(edition(series, last))
+    entry: EditionData = {}
+    if nxt.url:
+        entry["url"] = nxt.url
+    entry["url_is_fallback"] = True
+    if nxt.location:
+        entry["location"] = nxt.location
+    if nxt.when:
+        entry["when"] = nxt.when
+    calls: dict[str, CallData | None] = {c.kind: ({"deadline_hint": c.hint} if c.hint else {}) for c in nxt.calls}
     if calls:
         entry["calls"] = calls
     series["editions"][nxt.year] = entry
     return nxt.year
 
 
-def _check_dates(where: str, raw: dict, keys: tuple[str, ...]) -> list[str]:
+def _check_dates(where: str, raw: EditionData | CallData, keys: tuple[str, ...]) -> list[str]:
     problems = []
     for key in keys:
         try:
-            to_date(raw.get(key))
+            to_date(cast(DateValue, raw.get(key)))
         except ValueError:
             problems.append(f"{where}: {key} is not an ISO date: {raw.get(key)!r}")
     return problems
 
 
-def validate(data: dict) -> list[str]:
-    """Typos and impossible values in the registry, one message each; empty when it is clean."""
-    problems: list[str] = []
-    seen: set[str] = set()
-    for i, s in enumerate(data.get("series") or []):
-        sid = s.get("id", f"#{i}")
-        problems += [f"{sid}: missing field {k}" for k in sorted(SERIES_REQUIRED - set(s))]
-        problems += [f"{sid}: unknown field {k}" for k in sorted(set(s) - SERIES_KEYS)]
-        if sid in seen:
-            problems.append(f"{sid}: duplicate id")
-        seen.add(sid)
-        if "continent" in s and s["continent"] not in CONTINENTS:
-            problems.append(f"{sid}: unknown continent {s['continent']!r}")
-        if s.get("layout", "prose") not in LAYOUTS:
-            problems.append(f"{sid}: unknown layout {s['layout']!r}")
-        for year, raw_edition in (s.get("editions") or {}).items():
-            where = f"{sid} {year}"
-            ed = raw_edition or {}
-            problems += [f"{where}: unknown field {k}" for k in sorted(set(ed) - EDITION_KEYS)]
-            problems += _check_dates(where, ed, ("start", "end"))
-            for kind, raw_call in (ed.get("calls") or {}).items():
-                call = raw_call or {}
-                problems += [f"{where} {kind}: unknown field {k}" for k in sorted(set(call) - CALL_KEYS)]
-                problems += _check_dates(f"{where} {kind}", call, ("deadline", "deadline_hint"))
+def url_for(pattern: str, year: int) -> str:
+    """Fill a url_pattern or deadlines_pattern for one year."""
+    return pattern.format(year=year, yy=f"{year % 100:02d}")
+
+
+def _check_types(where: str, raw: SeriesData | EditionData | CallData) -> list[str]:
+    problems = []
+    for key, value in raw.items():
+        if key in LIST_FIELDS and not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
+            problems.append(f"{where}: {key} must be a list of words, not {value!r}")
+        elif key in BOOL_FIELDS and not isinstance(value, bool):
+            problems.append(f"{where}: {key} must be true or false, not {value!r}")
+        elif key in TEXT_FIELDS and value is not None and not isinstance(value, str):
+            problems.append(f"{where}: {key} must be text, not {value!r}")
     return problems
 
 
-def find(data: dict, series_id: str) -> dict:
+def _check_edition(where: str, ed: EditionData) -> list[str]:
+    problems = [f"{where}: unknown field {k}" for k in sorted(set(ed) - EDITION_KEYS)]
+    problems += _check_types(where, ed) + _check_dates(where, ed, ("start", "end"))
+    for kind, raw_call in (ed.get("calls") or {}).items():
+        call: CallData = raw_call or {}
+        problems += [f"{where} {kind}: unknown field {k}" for k in sorted(set(call) - CALL_KEYS)]
+        problems += _check_types(f"{where} {kind}", call)
+        problems += _check_dates(f"{where} {kind}", call, ("deadline", "deadline_hint"))
+    return problems
+
+
+def _check_series(sid: str, s: SeriesData) -> list[str]:
+    problems = [f"{sid}: missing field {k}" for k in sorted(SERIES_REQUIRED - set(s))]
+    problems += [f"{sid}: unknown field {k}" for k in sorted(set(s) - SERIES_KEYS)]
+    problems += _check_types(sid, s)
+    if "continent" in s and s["continent"] not in CONTINENTS:
+        problems.append(f"{sid}: unknown continent {s['continent']!r}")
+    if s.get("layout", "prose") not in LAYOUTS:
+        problems.append(f"{sid}: unknown layout {s['layout']!r}")
+    for key in ("url_pattern", "deadlines_pattern"):
+        pattern = s.get(key)
+        if isinstance(pattern, str):
+            try:
+                url_for(pattern, 2000)
+            except (KeyError, IndexError, ValueError):
+                problems.append(f"{sid}: {key} has a placeholder other than {{year}} and {{yy}}: {pattern!r}")
+    if "editions" in s and not s["editions"]:
+        problems.append(f"{sid}: no editions")
+    for year, raw_edition in (s.get("editions") or {}).items():
+        problems += _check_edition(f"{sid} {year}", raw_edition or {})
+    return problems
+
+
+def validate(data: RegistryData) -> list[str]:
+    """Typos and impossible values in the registry, one message each; empty when it is clean."""
+    series = data.get("series") or []
+    if not series:
+        return ["registry has no series"]
+    problems: list[str] = []
+    seen: set[str] = set()
+    for i, s in enumerate(series):
+        sid = s.get("id", f"#{i}")
+        if sid in seen:
+            problems.append(f"{sid}: duplicate id")
+        seen.add(sid)
+        problems += _check_series(sid, s)
+    return problems
+
+
+def find(data: RegistryData, series_id: str) -> SeriesData:
     for s in data["series"]:
         if s["id"] == series_id:
             return s

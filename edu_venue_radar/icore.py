@@ -9,7 +9,8 @@ from pathlib import Path
 
 import requests
 
-from .crawl import USER_AGENT
+from .crawl import TIMEOUT, USER_AGENT
+from .schema import Rank, RankFile, RegistryData
 
 PORTAL = "https://portal.core.edu.au/conf-ranks/"
 PAUSE = 1.0
@@ -17,15 +18,15 @@ PAUSE = 1.0
 MIN_CELLS = 4
 
 
-def _get(session: requests.Session, params: dict | None = None) -> str:
-    r = session.get(PORTAL, params=params, timeout=30)
+def _get(session: requests.Session, params: dict[str, str | int] | None = None) -> str:
+    r = session.get(PORTAL, params=params, timeout=TIMEOUT)
     r.raise_for_status()
     return r.text
 
 
 def latest_source(session: requests.Session) -> str:
     """Newest ranking edition offered by the portal, e.g. ICORE2026."""
-    sources = re.findall(r'value="((?:I?CORE)(\d{4}))"', _get(session))
+    sources: list[tuple[str, str]] = re.findall(r'value="((?:I?CORE)(\d{4}))"', _get(session))
     if not sources:
         raise RuntimeError("ICORE portal lists no ranking edition")
     return max(sources, key=lambda s: int(s[1]))[0]
@@ -40,21 +41,21 @@ def parse_rows(page: str) -> list[list[str]]:
     return rows
 
 
-def lookup(session: requests.Session, acronym: str, source: str) -> dict | None:
-    params = {"search": acronym, "by": "acronym", "source": source, "sort": "atitle", "page": 1}
+def lookup(session: requests.Session, acronym: str, source: str) -> Rank | None:
+    params: dict[str, str | int] = {"search": acronym, "by": "acronym", "source": source, "sort": "atitle", "page": 1}
     for title, acr, _source, rank, *_ in parse_rows(_get(session, params)):
         if acr.lower() == acronym.lower():
             return {"title": title, "acronym": acr, "rank": rank}
     return None
 
 
-def update(registry: dict, out: Path, today: date, session: requests.Session | None = None) -> dict:
+def update(registry: RegistryData, out: Path, today: date, session: requests.Session | None = None) -> RankFile:
     """Look up every series and write `out`; keeps the old file when the portal answers with nothing."""
     if session is None:
         session = requests.Session()
         session.headers["User-Agent"] = USER_AGENT
     source = latest_source(session)
-    ranks: dict = {"source": source, "checked": today.isoformat(), "ranks": {}}
+    ranks: RankFile = {"source": source, "checked": today.isoformat(), "ranks": {}}
     for series in registry["series"]:
         acronym = series.get("icore")
         if not acronym:

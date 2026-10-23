@@ -6,7 +6,8 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from .registry import CONTINENTS, Call, Edition, current_edition
+from .registry import CONTINENTS, STATUS_ORDER, Call, Edition, current_edition
+from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
 
 SOON_DAYS = 45
 
@@ -49,12 +50,11 @@ def call_line(call: Call, today: date) -> str:
 def calls_cell(ed: Edition, today: date) -> str:
     if not ed.calls:
         return '<span class="muted">no call known yet</span>'
-    order = {"open": 0, "expected": 1, "unknown": 2, "closed": 3}
-    calls = sorted(ed.calls, key=lambda c: (order[c.status(today)], c.effective_deadline() or date.max))
+    calls = sorted(ed.calls, key=lambda c: (STATUS_ORDER.index(c.status(today)), c.effective_deadline() or date.max))
     return "".join(call_line(c, today) for c in calls)
 
 
-def crawl_cell(crawl: dict | None, ed: Edition) -> str:
+def crawl_cell(crawl: CrawlRecord | None, ed: Edition) -> str:
     if not crawl:
         return '<span class="muted">not crawled yet</span>'
     parts = []
@@ -62,8 +62,8 @@ def crawl_cell(crawl: dict | None, ed: Edition) -> str:
     checked = crawl.get("checked", "")[:10]
     if crawl.get("error"):
         parts.append(f'<span class="warn">unreachable ({escape(str(crawl["error"]))})</span>')
-    if crawl.get("changed_on"):
-        parts.append(f'<span class="flag">page changed {fmt(date.fromisoformat(crawl["changed_on"][:10]))}</span>')
+    if changed_on := crawl.get("changed_on"):
+        parts.append(f'<span class="flag">page changed {fmt(date.fromisoformat(changed_on[:10]))}</span>')
     for c in crawl.get("candidates", [])[:3]:
         parts.append(
             f'<span class="cand{" ok" if c["when"] in confirmed else ""}" '
@@ -78,7 +78,7 @@ def crawl_cell(crawl: dict | None, ed: Edition) -> str:
     return "<br>".join(parts)
 
 
-def row(series: dict, ed: Edition, crawl: dict | None, rank: dict | None, today: date) -> tuple[date, str]:
+def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank | None, today: date) -> tuple[date, str]:
     sort_date = ed.next_deadline(today)
     topics = " ".join(series.get("topics", []))
     chips = "".join(f'<span class="chip">{escape(t)}</span>' for t in series.get("topics", []))
@@ -106,15 +106,15 @@ def row(series: dict, ed: Edition, crawl: dict | None, rank: dict | None, today:
     return (sort_date or date.max), html
 
 
-def build(registry: dict, crawl_dir: Path, icore_file: Path, out: Path, today: date) -> Path:
-    ranks = json.loads(icore_file.read_text())["ranks"] if icore_file.exists() else {}
-    icore_meta = json.loads(icore_file.read_text()) if icore_file.exists() else {}
+def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, today: date) -> Path:
+    icore_meta: RankFile | None = json.loads(icore_file.read_text()) if icore_file.exists() else None
+    ranks = icore_meta["ranks"] if icore_meta else {}
     groups: dict[int, dict[str, list[tuple[date, str]]]] = defaultdict(lambda: defaultdict(list))
     topics: set[str] = set()
     for series in registry["series"]:
         ed = current_edition(series, today)
         crawl_file = crawl_dir / f"{series['id']}.json"
-        crawl = json.loads(crawl_file.read_text()) if crawl_file.exists() else None
+        crawl: CrawlRecord | None = json.loads(crawl_file.read_text()) if crawl_file.exists() else None
         if crawl and crawl.get("edition") != ed.year:
             crawl = None
         groups[ed.year][series.get("continent", "Online")].append(row(series, ed, crawl, ranks.get(series["id"]), today))
@@ -135,7 +135,7 @@ def build(registry: dict, crawl_dir: Path, icore_file: Path, out: Path, today: d
         sections.append(f"<section><h2>Conferences in {year}</h2>{''.join(blocks)}</section>")
 
     filters = "".join(f'<label><input type="checkbox" value="{escape(t)}" checked> {escape(t)}</label>' for t in sorted(topics))
-    source = escape(icore_meta.get("source", "ICORE"))
+    source = escape(icore_meta["source"] if icore_meta else "ICORE")
     page = TEMPLATE.format(
         today=fmt(today),
         sections="".join(sections),

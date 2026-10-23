@@ -1,6 +1,7 @@
 """Find dates in free text, in the spellings conference pages use (English and German)."""
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 
@@ -45,7 +46,7 @@ MONTHS = {
 SEASONS = {"spring": 4, "frühjahr": 4, "summer": 7, "sommer": 7, "autumn": 9, "fall": 9, "herbst": 9, "winter": 12}
 
 _MONTH = "|".join(sorted(MONTHS, key=len, reverse=True))
-_PATTERNS = [
+_PATTERNS: list[tuple[re.Pattern[str], Callable[[re.Match[str]], tuple[int, int, int]]]] = [
     # 2026-12-07
     (re.compile(r"\b(\d{4})-(\d{1,2})-(\d{1,2})\b"), lambda m: (int(m[1]), int(m[2]), int(m[3]))),
     # 07.12.2026
@@ -97,11 +98,11 @@ _SENTENCE_END = re.compile(r"[.!?]\s+(?=[A-ZÄÖÜ])")
 def _sentence_bounds(text: str, start: int, end: int, window: int) -> tuple[int, int]:
     """Window around [start, end), cut back to the sentence the date stands in."""
     lo, hi = max(0, start - window), min(len(text), end + window)
-    for m in _SENTENCE_END.finditer(text, lo, start):
-        lo = m.end()
-    m = _SENTENCE_END.search(text, end, hi)
-    if m:
-        hi = m.start() + 1
+    for before in _SENTENCE_END.finditer(text, lo, start):
+        lo = before.end()
+    after = _SENTENCE_END.search(text, end, hi)
+    if after:
+        hi = after.start() + 1
     return lo, hi
 
 
@@ -218,20 +219,20 @@ def deadline_candidates(
         if f.when < today or f.when.year > today.year + 2 or (before and f.when >= before):
             continue
         if layout == "date-first":
-            lo, hi = _label_after(text, dates, i, window)
-            label = lowered[lo:hi]
+            own = _label_after(text, dates, i, window)
+            label = lowered[own[0] : own[1]]
             hit = next(((0, kw) for kw in keywords if kw.lower() in label), None)
-            own = (lo, hi)
-            lo = f.start
+            # The context shown starts at the date itself, followed by its label.
+            ctx_lo, ctx_hi = f.start, own[1]
         else:
-            lo, hi = _sentence_bounds(text, f.start, f.end, window)
-            hit = _nearest_keyword(lowered, keywords, f.start, f.end, lo, hi)
-            own = _own_label(text, dates, i, lo, hi)
+            ctx_lo, ctx_hi = _sentence_bounds(text, f.start, f.end, window)
+            hit = _nearest_keyword(lowered, keywords, f.start, f.end, ctx_lo, ctx_hi)
+            own = _own_label(text, dates, i, ctx_lo, ctx_hi)
         if hit is None or _rejected(lowered[own[0] : own[1]], before=own[1] == f.start):
             continue
         rank = keywords.index(hit[1])
         if f.when not in best or rank < best[f.when][0]:
-            best[f.when] = (rank, Candidate(f.when, hit[1], " ".join(text[lo:hi].split())))
+            best[f.when] = (rank, Candidate(f.when, hit[1], " ".join(text[ctx_lo:ctx_hi].split())))
     return [c for _, c in sorted(best.values(), key=lambda rc: (rc[0], rc[1].when))]
 
 
