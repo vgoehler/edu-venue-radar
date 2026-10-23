@@ -111,10 +111,10 @@ series:
   - id: eurosotl
     name: EuroSoTL
     full_name: European Conference on the Scholarship of Teaching and Learning
-    organizer: European SoTL network, hosted by a university each time
+    organizer: EuroSoTL network (eurosotl.org), hosted by a different university each edition
     icore: null
     continent: Europe
-    # languages: call for contributions of the 2025 host; no formal proceedings; host changes yearly
+    # languages: call for contributions of the 2025 host; no formal proceedings; usually every two years, host changes
     languages: [en]
     proceedings_languages: []
     language_source: inferred
@@ -122,15 +122,14 @@ series:
     keywords: [call for contributions, proposal, workshop, deadline]
     editions:
       2027:
-        url: https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en
-        url_is_fallback: true
-        location: London, UK
+        url: https://eurosotl.org/?p=2140
+        location: University of Westminster, London, UK
         start: 2027-06-08
         end: 2027-06-11
         calls:
           contributions:
             deadline_hint: 2024-12-15
-            note: the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels
+            note: "call for proposals to open in the coming months (announcement 03.03.2026); the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels; collaborative writing groups 07.06.2027"
 
   - id: iticse
     name: ITiCSE
