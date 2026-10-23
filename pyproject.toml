@@ -18,7 +18,7 @@ edu-venue-radar = "edu_venue_radar.cli:main"
 packages = [{ include = "edu_venue_radar" }]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
+pytest = ">=9.0.3"
 pytest-cov = "^6.0"
 ruff = "^0.12"
 

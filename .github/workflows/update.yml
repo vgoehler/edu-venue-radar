@@ -19,17 +19,19 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # Actions pinned to commits; Dependabot proposes updates.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
         with:
           python-version: "3.11"
-      - run: pip install .
+      # Install the locked versions from poetry.lock, not the newest matching ones.
+      - run: pip install "poetry==2.1.1" && poetry install --only main
       # A failing ranking portal must not stop the crawl.
-      - run: edu-venue-radar --root . icore || echo "ICORE lookup failed, keeping the last ranks"
+      - run: poetry run edu-venue-radar --root . icore || echo "ICORE lookup failed, keeping the last ranks"
         if: github.event_name != 'push'
-      - run: edu-venue-radar --root . crawl
+      - run: poetry run edu-venue-radar --root . crawl
         if: github.event_name != 'push'
-      - run: edu-venue-radar --root . build
+      - run: poetry run edu-venue-radar --root . build
       - name: commit
         run: |
           git config user.name "edu-venue-radar bot"
