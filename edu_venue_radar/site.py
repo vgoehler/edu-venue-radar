@@ -11,6 +11,17 @@ from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
 from .worldmap import world_map
 
 SOON_DAYS = 45
+# Which call kinds count for the call filter in the table head. A single open call for every
+# format ("contributions", "sessions", ...) counts for all of them.
+CALL_CATEGORIES = {
+    "papers": {"papers", "abstracts"},
+    "workshops": {"workshops", "workshops-special-sessions", "working-groups"},
+    "posters": {"posters-demos", "posters-lightning-talks"},
+    "special": {"special-sessions", "workshops-special-sessions"},
+}
+CATEGORY_LABELS = {"papers": "papers", "workshops": "workshops", "posters": "posters", "special": "special sessions"}
+OPEN_CALLS = {"contributions", "proposals", "presentations", "sessions", "congress"}
+NO_DATE = "9999-12-31"
 EVIDENCE = {
     "confirmed": "confirmed for this edition",
     "partial": "edition entered, deadlines from last year",
@@ -32,6 +43,28 @@ def conference_text(ed: Edition) -> str:
     return ed.when or ""
 
 
+def categories(kind: str) -> list[str]:
+    if kind in OPEN_CALLS:
+        return list(CALL_CATEGORIES)
+    return [cat for cat, kinds in CALL_CATEGORIES.items() if kind in kinds]
+
+
+def sort_keys(ed: Edition, today: date) -> dict[str, str]:
+    """data-* values the page sorts and filters by: conference date and next deadline per call category.
+
+    A category is missing when the edition has no live call of that kind; a live call without
+    a date sorts last.
+    """
+    nxt = ed.next_deadline(today)
+    keys = {"conf": ed.approx_start.isoformat(), "dl-all": nxt.isoformat() if nxt else NO_DATE}
+    for cat in CALL_CATEGORIES:
+        live = [c for c in ed.live_calls(today) if cat in categories(c.kind)]
+        if live:
+            dates = [d for c in live if (d := c.effective_deadline())]
+            keys[f"dl-{cat}"] = min(dates).isoformat() if dates else NO_DATE
+    return keys
+
+
 def call_line(call: Call, today: date) -> str:
     """One call: kind, deadline (confirmed, typical, unknown or closed), note."""
     note = f'<div class="note">{escape(call.note)}</div>' if call.note else ""
@@ -50,7 +83,7 @@ def call_line(call: Call, today: date) -> str:
         when = f"closed {fmt(call.deadline)}".strip()
     else:
         cls, when = "unknown", "date unknown"
-    return f'<div class="cl st-{cls}">{kind} {when}{note}</div>'
+    return f'<div class="cl st-{cls}" data-cat="{" ".join(categories(call.kind))}">{kind} {when}{note}</div>'
 
 
 def calls_cell(ed: Edition, today: date) -> str:
@@ -134,8 +167,9 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
     if ed.call_url:
         link += f'<br><a href="{escape(ed.call_url)}">call</a>'
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
+    data = " ".join(f'data-{k}="{v}"' for k, v in sort_keys(ed, today).items())
     html = f"""
-      <tr class="ev-{ed.evidence}" data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
+      <tr class="ev-{ed.evidence}" {data} data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
         <td><span class="sr">{EVIDENCE[ed.evidence]}: </span><strong>{escape(series["name"])} {ed.year}</strong><div class="note">{escape(series.get("full_name", ""))}</div>{chips}{guessed}</td>
         <td>{escape(series.get("organizer", ""))}{kind}</td>
         <td class="rank">{rank_html}</td>
@@ -167,6 +201,9 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
         languages.update(series.get("languages", []))
         counts[series.get("continent", "Online")] += 1
 
+    call_options = '<option value="all">all calls</option>' + "".join(
+        f'<option value="{cat}">{label}</option>' for cat, label in CATEGORY_LABELS.items()
+    )
     sections = []
     for year in sorted(groups):
         blocks = []
@@ -176,8 +213,10 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
     <div class="cblock" data-continent="{escape(continent)}">
     <h3>{escape(continent)}</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of">{call_options}</select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>{rows}</tbody>
     </table></div>
     </div>""")
@@ -286,6 +325,13 @@ tbody tr td:first-child::before {{ content: ""; position: absolute; left: 0; top
 .cl.st-open strong {{ color: var(--open); }}
 .cl.st-closed {{ color: var(--muted); }}
 td.call {{ min-width: 240px; }}
+th button.sort {{ font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }}
+th button.sort::after {{ content: " ↕"; color: var(--muted); font-weight: 400; }}
+th[aria-sort="ascending"] button.sort::after {{ content: " ↑"; color: var(--accent); }}
+th button.sort:hover {{ text-decoration: underline; }}
+.callsort {{ font: inherit; font-size: .8rem; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--line); border-radius: 4px;
+  background: var(--bg); color: var(--fg); }}
+.cl.dim {{ opacity: .4; }}
 .crawl {{ font-size: .82rem; min-width: 190px; }}
 .flag {{ background: var(--flag-bg); color: var(--flag); border-radius: 4px; padding: 0 4px; }}
 .warn {{ color: var(--soon); }}
@@ -327,6 +373,28 @@ publisher the registry does not list (hover for the phrase). It never changes th
 </main>
 <script>
 const checked = sel => new Set([...document.querySelectorAll(sel + ' input')].filter(b => b.checked).map(b => b.value));
+// Table order: by the next deadline of the chosen call category, or by conference date.
+const order = {{ key: 'deadline', cat: 'all' }};
+const dlKey = () => 'dl' + order.cat[0].toUpperCase() + order.cat.slice(1);
+function sortRows() {{
+  const key = order.key === 'conf' ? 'conf' : dlKey();
+  const val = tr => tr.dataset[key] || '9999-12-31';
+  document.querySelectorAll('tbody').forEach(tb => {{
+    [...tb.rows].sort((a, b) => val(a).localeCompare(val(b)) || a.dataset.conf.localeCompare(b.dataset.conf))
+      .forEach(tr => tb.appendChild(tr));
+  }});
+  document.querySelectorAll('th[data-sort]').forEach(th =>
+    th.setAttribute('aria-sort', th.dataset.sort === order.key ? 'ascending' : 'none'));
+  document.querySelectorAll('.callsort').forEach(s => {{ s.value = order.cat; }});
+  document.querySelectorAll('.cl').forEach(l =>
+    l.classList.toggle('dim', order.cat !== 'all' && !l.dataset.cat.split(' ').includes(order.cat)));
+}}
+document.querySelectorAll('th[data-sort] button').forEach(b => b.addEventListener('click', () => {{
+  order.key = b.closest('th').dataset.sort; sortRows();
+}}));
+document.querySelectorAll('.callsort').forEach(s => s.addEventListener('change', () => {{
+  order.cat = s.value; order.key = 'deadline'; sortRows(); apply();
+}}));
 // Continents picked on the map; empty means all.
 const picked = new Set();
 const toggles = document.querySelectorAll('.region, .region-btn');
@@ -334,7 +402,8 @@ function apply() {{
   const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {{
     const t = tr.dataset.topics.split(' '), l = tr.dataset.langs.split(' ');
-    tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x));
+    const noCall = order.cat !== 'all' && !(dlKey() in tr.dataset);
+    tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x)) || noCall;
   }});
   document.querySelectorAll('.cblock').forEach(b => {{
     const shown = picked.size === 0 || picked.has(b.dataset.continent);

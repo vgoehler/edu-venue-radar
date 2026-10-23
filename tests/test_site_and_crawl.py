@@ -194,3 +194,19 @@ def test_conference_text():
     assert site.conference_text(edition(s, 2027)) == "06.–09.04.2027"
     s["editions"][2027] = {"start": "2027-06-30", "end": "2027-07-02"}
     assert site.conference_text(edition(s, 2027)) == "30.06.–02.07.2027"
+
+
+def test_sort_keys_per_call_category():
+    ed = edition(REG["series"][0], 2027)  # workshops 2026-11-01, papers 2026-10-01
+    keys = site.sort_keys(ed, date(2026, 9, 1))
+    assert keys["conf"] == "2027-04-06" and keys["dl-all"] == "2026-10-01"
+    assert keys["dl-papers"] == "2026-10-01" and keys["dl-workshops"] == "2026-11-01"
+    assert "dl-posters" not in keys
+    # After the papers deadline only the workshop call is live.
+    assert "dl-papers" not in site.sort_keys(ed, date(2026, 10, 15))
+
+
+def test_open_calls_count_for_every_category():
+    assert site.categories("contributions") == list(site.CALL_CATEGORIES)
+    assert site.categories("workshops-special-sessions") == ["workshops", "special"]
+    assert site.categories("artifacts") == []

@@ -15,13 +15,13 @@
   :root:not([data-theme="light"]) {
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
   }
 }
 :root[data-theme="dark"] {
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
 }
 * { box-sizing: border-box; }
 body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -38,6 +38,16 @@ table { border-collapse: collapse; width: 100%; min-width: 1100px; }
 th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { background: var(--head); font-size: .85rem; font-weight: 600; }
 tr:last-child td { border-bottom: 0; }
+/* Bar before each row: how much of the edition is confirmed. Solid, dotted and striped, so it does not rely on colour. */
+.ev-confirmed { --ev: var(--open); --ev-bg: var(--open); }
+.ev-partial { --ev: var(--flag); --ev-bg: repeating-linear-gradient(180deg, var(--flag) 0 4px, transparent 4px 7px); }
+.ev-guessed { --ev: var(--muted); --ev-bg: repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 5px); }
+tbody tr td:first-child { position: relative; padding-left: 16px; }
+tbody tr td:first-child::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--ev-bg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 4px 0 16px; font-size: .88rem; color: var(--muted); }
+.legend strong { color: var(--fg); }
+.legend .ev { display: inline-block; width: 6px; height: 1.1em; vertical-align: -3px; margin-right: 6px; background: var(--ev-bg); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .note { color: var(--muted); font-size: .82rem; margin-top: 2px; }
 .muted { color: var(--muted); }
 .mapbox { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin: 18px 0 6px; }
@@ -68,6 +78,13 @@ tr:last-child td { border-bottom: 0; }
 .cl.st-open strong { color: var(--open); }
 .cl.st-closed { color: var(--muted); }
 td.call { min-width: 240px; }
+th button.sort { font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+th button.sort::after { content: " ↕"; color: var(--muted); font-weight: 400; }
+th[aria-sort="ascending"] button.sort::after { content: " ↑"; color: var(--accent); }
+th button.sort:hover { text-decoration: underline; }
+.callsort { font: inherit; font-size: .8rem; margin-left: 6px; padding: 1px 4px; border: 1px solid var(--line); border-radius: 4px;
+  background: var(--bg); color: var(--fg); }
+.cl.dim { opacity: .4; }
 .crawl { font-size: .82rem; min-width: 190px; }
 .flag { background: var(--flag-bg); color: var(--flag); border-radius: 4px; padding: 0 4px; }
 .warn { color: var(--soon); }
@@ -88,136 +105,142 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
 <p class="note">Click a continent to show only its venues; click more to add them.</p></div></div>
 <div class="filters" id="filters"><strong>Topics:</strong> <label><input type="checkbox" value="ai-in-education" checked> ai-in-education</label><label><input type="checkbox" value="ai-literacy" checked> ai-literacy</label><label><input type="checkbox" value="computing-education" checked> computing-education</label><label><input type="checkbox" value="digital-education" checked> digital-education</label><label><input type="checkbox" value="engineering-education" checked> engineering-education</label><label><input type="checkbox" value="learning-analytics" checked> learning-analytics</label><label><input type="checkbox" value="sotl" checked> sotl</label></div>
 <div class="filters" id="langs"><strong>Submission in:</strong> <label><input type="checkbox" value="de" checked> de</label><label><input type="checkbox" value="en" checked> en</label><label><input type="checkbox" value="fi" checked> fi</label></div>
+<div class="legend"><strong>Data:</strong>
+<span><i class="ev ev-confirmed"></i>confirmed for this edition</span>
+<span><i class="ev ev-partial"></i>edition entered, deadlines from last year</span>
+<span><i class="ev ev-guessed"></i>guessed from last year</span></div>
 <section><h2>Conferences in 2027</h2>
     <div class="cblock" data-continent="Europe">
     <h3>Europe</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="engineering-education digital-education" data-langs="en">
-        <td><strong>EDUCON 2027</strong><div class="note">IEEE Global Engineering Education Conference</div><span class="chip">engineering-education</span><span class="chip">digital-education</span></td>
+      <tr class="ev-confirmed" data-conf="2027-04-06" data-dl-all="2026-10-30" data-dl-papers="2026-10-30" data-dl-workshops="2026-12-07" data-topics="engineering-education digital-education" data-langs="en">
+        <td><span class="sr">confirmed for this edition: </span><strong>EDUCON 2027</strong><div class="note">IEEE Global Engineering Education Conference</div><span class="chip">engineering-education</span><span class="chip">digital-education</span></td>
         <td>IEEE Education Society</td>
         <td class="rank">C</td>
         <td>Timișoara, Romania</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">06.–09.04.2027</td>
-        <td class="call"><div class="cl st-soon"><span class="kind">papers</span> <strong>30.10.2026</strong> <span class="days" data-deadline="2026-10-30">in 7 days</span><div class="note">abstracts; preliminary papers 07.12.2026</div></div><div class="cl st-soon"><span class="kind">workshops</span> <strong>07.12.2026</strong> <span class="days" data-deadline="2026-12-07">in 45 days</span><div class="note">workshops, panels and posters</div></div><div class="cl st-closed"><span class="kind">special sessions</span> closed 08.10.2026</div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers"><span class="kind">papers</span> <strong>30.10.2026</strong> <span class="days" data-deadline="2026-10-30">in 7 days</span><div class="note">abstracts; preliminary papers 07.12.2026</div></div><div class="cl st-soon" data-cat="workshops"><span class="kind">workshops</span> <strong>07.12.2026</strong> <span class="days" data-deadline="2026-12-07">in 45 days</span><div class="note">workshops, panels and posters</div></div><div class="cl st-closed" data-cat="special"><span class="kind">special sessions</span> closed 08.10.2026</div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="cand ok" title="s &amp; Information Oct 08, 2026 Alternative Session Proposal Submission (Special Session) Oct 26, 2026 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission">30.10.2026 <span class="muted">near “special session”</span></span><br><span class="cand ok" title="6 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission of Proposals for Workshops, Panels, and Posters Jan 11, 2027 Paper Decision Notifications Feb 15,">07.12.2026 <span class="muted">near “abstract”</span></span><br><span class="cand" title="ers Jan 11, 2027 Paper Decision Notifications Feb 15, 2027 Final Camera-Ready Manuscript Deadline, Author Registration Deadline, Advanced Registration Deadline Apr 05, 2027 — Apr 09, 2027 EDUCON 2027 Conference About IEEE EDUCON 2027 The IEEE Global Engineering Education Conference (EDUCON) is one of the flagship conferences of th">05.04.2027 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://educon-conference.org/2027">website</a><br><a href="https://educon-conference.org/2027/authors/call-for-papers">call</a></td>
       </tr>
-      <tr data-topics="digital-education ai-literacy" data-langs="fi en">
-        <td><strong>ITK 2027</strong><div class="note">Interaktiivinen tekniikka koulutuksessa (Interactive Technology in Education)</div><span class="chip">digital-education</span><span class="chip">ai-literacy</span></td>
+      <tr class="ev-confirmed" data-conf="2027-04-21" data-dl-all="2026-11-02" data-dl-papers="2026-11-02" data-dl-workshops="2026-11-02" data-dl-posters="2026-11-02" data-dl-special="2026-11-02" data-topics="digital-education ai-literacy" data-langs="fi en">
+        <td><span class="sr">confirmed for this edition: </span><strong>ITK 2027</strong><div class="note">Interaktiivinen tekniikka koulutuksessa (Interactive Technology in Education)</div><span class="chip">digital-education</span><span class="chip">ai-literacy</span></td>
         <td>Suomen eOppimiskeskus (Finnish eLearning Centre)<div class="note">practitioner event, proceedings in Finnish</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>Tampere Hall, Tampere, Finland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">fi</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">proceedings: fi</div></td>
         <td class="nowrap">21.–23.04.2027</td>
-        <td class="call"><div class="cl st-soon"><span class="kind">presentations</span> <strong>02.11.2026</strong> <span class="days" data-deadline="2026-11-02">in 10 days</span><div class="note">one call for ITK Forum, Arena, Workshop (hands-on) and Poster</div></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special"><span class="kind">presentations</span> <strong>02.11.2026</strong> <span class="days" data-deadline="2026-11-02">in 10 days</span><div class="note">one call for ITK Forum, Arena, Workshop (hands-on) and Poster</div></div></td>
         <td class="crawl"><span class="cand ok" title="Technology in Education Conference 2027 Tampere Hall Tampere, Finland, April 21-23, 2027 Conference web page https://itk-konferenssi.fi/en Submission deadline November 2, 2026 Topics: educational technology artificial intelligence in education ITK2027 – A New Contract for Learning 21–23 April 2027 | Tampere Hall, Tampere, Finland Cal">02.11.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://easychair.org/cfp/ITK2027">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>CSEDU 2027</strong><div class="note">International Conference on Computer Supported Education</div><span class="chip">digital-education</span></td>
+      <tr class="ev-confirmed" data-conf="2027-04-01" data-dl-all="2026-11-17" data-dl-papers="2026-11-17" data-dl-workshops="2026-11-27" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">confirmed for this edition: </span><strong>CSEDU 2027</strong><div class="note">International Conference on Computer Supported Education</div><span class="chip">digital-education</span></td>
         <td>INSTICC (commercial organizer, SCITEPRESS proceedings)</td>
         <td class="rank">B</td>
         <td>Rome, Italy (unconfirmed)</td>
         <td class="nowrap"><span class="lang">en</span></td>
         <td class="nowrap">April 2027</td>
-        <td class="call"><div class="cl st-soon"><span class="kind">papers</span> <strong>17.11.2026</strong> <span class="days" data-deadline="2026-11-17">in 25 days</span><div class="note">second round (position/regular papers) 21.12.2026</div></div><div class="cl st-soon"><span class="kind">workshops</span> <strong>27.11.2026</strong> <span class="days" data-deadline="2026-11-27">in 35 days</span><div class="note">proposals for new workshops, https://csedu.scitevents.org/Workshops.aspx</div></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers"><span class="kind">papers</span> <strong>17.11.2026</strong> <span class="days" data-deadline="2026-11-17">in 25 days</span><div class="note">second round (position/regular papers) 21.12.2026</div></div><div class="cl st-soon" data-cat="workshops"><span class="kind">workshops</span> <strong>27.11.2026</strong> <span class="days" data-deadline="2026-11-27">in 35 days</span><div class="note">proposals for new workshops, https://csedu.scitevents.org/Workshops.aspx</div></div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="cand ok" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Educa">17.11.2026 <span class="muted">near “paper submission”</span></span><br><span class="cand ok" title="ar Papers Paper Submission: December 21, 2026 Authors Notification: February 15, 2027 Camera Ready and Registration: March 1, 2027 Workshops Workshop Proposal: November 27, 2026 Paper Submission: February 16, 2027 Authors Notification: March 2, 2027 Camera Ready and Registration: March 10, 2027 Special Sessions Special Session Proposal">27.11.2026 <span class="muted">near “paper submission”</span></span><br><span class="cand" title="Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Education, is a yearly meeting place for presenting and di">21.12.2026 <span class="muted">near “paper submission”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://csedu.scitevents.org/">website</a><br><a href="https://csedu.scitevents.org/CallForPapers.aspx">call</a></td>
       </tr>
-      <tr data-topics="sotl" data-langs="en">
-        <td><strong>EuroSoTL 2027</strong><div class="note">European Conference on the Scholarship of Teaching and Learning</div><span class="chip">sotl</span></td>
+      <tr class="ev-partial" data-conf="2027-06-08" data-dl-all="2026-12-15" data-dl-papers="2026-12-15" data-dl-workshops="2026-12-15" data-dl-posters="2026-12-15" data-dl-special="2026-12-15" data-topics="sotl" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>EuroSoTL 2027</strong><div class="note">European Conference on the Scholarship of Teaching and Learning</div><span class="chip">sotl</span></td>
         <td>European SoTL network, hosted by a university each time</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>London, UK</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">08.–11.06.2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">contributions</span> typically 15.12.2026 <span class="muted">(last: 15.12.2024)</span><div class="note">the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">contributions</span> typically 15.12.2026 <span class="muted">(last: 15.12.2024)</span><div class="note">the 2025 call ran 15.10.–15.12.2024; papers, workshops, PechaKucha, panels</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://rug.nl/about-ug/organization/service-departments/teaching-academy-groningen/activities/eurosotl-2025/call-for-contributions?lang=en">previous edition</a></td>
       </tr>
-      <tr data-topics="computing-education" data-langs="en">
-        <td><strong>ITiCSE 2027</strong><div class="note">Innovation and Technology in Computer Science Education</div><span class="chip">computing-education</span></td>
+      <tr class="ev-confirmed" data-conf="2027-07-12" data-dl-all="2027-01-11" data-dl-papers="2027-01-18" data-dl-workshops="2027-01-11" data-topics="computing-education" data-langs="en">
+        <td><span class="sr">confirmed for this edition: </span><strong>ITiCSE 2027</strong><div class="note">Innovation and Technology in Computer Science Education</div><span class="chip">computing-education</span></td>
         <td>ACM SIGCSE</td>
         <td class="rank">B</td>
         <td>University of Glasgow, Scotland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">12.–14.07.2027</td>
-        <td class="call"><div class="cl st-open"><span class="kind">papers</span> <strong>18.01.2027</strong> <span class="days" data-deadline="2027-01-18">in 87 days</span><div class="note">abstracts 11.01.2027; dates provisional</div></div><div class="cl st-expected"><span class="kind">working groups</span> typically 11.01.2027 <span class="muted">(last: 11.01.2026)</span><div class="note">2-page proposal by up to four leaders; groups meet 09–11.07.</div></div></td>
+        <td class="call"><div class="cl st-open" data-cat="papers"><span class="kind">papers</span> <strong>18.01.2027</strong> <span class="days" data-deadline="2027-01-18">in 87 days</span><div class="note">abstracts 11.01.2027; dates provisional</div></div><div class="cl st-expected" data-cat="workshops"><span class="kind">working groups</span> typically 11.01.2027 <span class="muted">(last: 11.01.2026)</span><div class="note">2-page proposal by up to four leaders; groups meet 09–11.07.</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://iticse.acm.org/2027/">website</a><br><a href="https://iticse.acm.org/2027/call-for-papers/">call</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="de en">
-        <td><strong>University:Future Festival 2027</strong><div class="note">University:Future Festival</div><span class="chip">digital-education</span></td>
+      <tr class="ev-partial" data-conf="2027-06-01" data-dl-all="2027-02-16" data-dl-papers="2027-02-16" data-dl-workshops="2027-02-16" data-dl-posters="2027-02-16" data-dl-special="2027-02-16" data-topics="digital-education" data-langs="de en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>University:Future Festival 2027</strong><div class="note">University:Future Festival</div><span class="chip">digital-education</span></td>
         <td>Hochschulforum Digitalisierung, StIL, Stifterverband<div class="note">practice festival, no proceedings</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>several German sites plus online</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">June 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 16.02.2027 <span class="muted">(last: 16.02.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 16.02.2027 <span class="muted">(last: 16.02.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://festival.hfd.digital">website</a></td>
       </tr>
-      <tr data-topics="digital-education sotl" data-langs="de">
-        <td><strong>TURN 2027</strong><div class="note">TURN Conference</div><span class="chip">digital-education</span><span class="chip">sotl</span></td>
+      <tr class="ev-guessed" data-conf="2027-09-01" data-dl-all="2027-03-01" data-dl-papers="2027-03-01" data-dl-workshops="2027-03-01" data-dl-posters="2027-03-01" data-dl-special="2027-03-01" data-topics="digital-education sotl" data-langs="de">
+        <td><span class="sr">guessed from last year: </span><strong>TURN 2027</strong><div class="note">TURN Conference</div><span class="chip">digital-education</span><span class="chip">sotl</span></td>
         <td>Stiftung Innovation in der Hochschullehre (StIL)<div class="note">practice forum</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>not announced (2026 Bauhaus-Universität Weimar)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><div class="note">no proceedings</div></td>
         <td class="nowrap">autumn 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 01.03.2027 <span class="muted">(last: 01.03.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 01.03.2027 <span class="muted">(last: 01.03.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://sessionize.com/turn-conference-26">previous edition</a></td>
       </tr>
-      <tr data-topics="digital-education computing-education" data-langs="de en">
-        <td><strong>DELFI 2027</strong><div class="note">Fachtagung Bildungstechnologien (with HDI when it runs)</div><span class="chip">digital-education</span><span class="chip">computing-education</span></td>
+      <tr class="ev-confirmed" data-conf="2027-08-31" data-dl-all="2027-03-03" data-dl-papers="2027-04-01" data-dl-workshops="2027-03-03" data-dl-posters="2027-05-19" data-topics="digital-education computing-education" data-langs="de en">
+        <td><span class="sr">confirmed for this edition: </span><strong>DELFI 2027</strong><div class="note">Fachtagung Bildungstechnologien (with HDI when it runs)</div><span class="chip">digital-education</span><span class="chip">computing-education</span></td>
         <td>GI, Fachgruppe Bildungstechnologien<div class="note">German national, proceedings in GI LNI</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>PH St. Gallen, Rorschach on Lake Constance, Switzerland</td>
         <td class="nowrap"><span class="lang">de</span><span class="lang">en</span></td>
         <td class="nowrap">31.08.–02.09.2027</td>
-        <td class="call"><div class="cl st-open"><span class="kind">workshops</span> <strong>03.03.2027</strong> <span class="days" data-deadline="2027-03-03">in 131 days</span><div class="note">workshops and tutorials, notification 24.03.2027</div></div><div class="cl st-open"><span class="kind">abstracts</span> <strong>01.04.2027</strong> <span class="days" data-deadline="2027-04-01">in 160 days</span><div class="note">abstracts for short and long papers</div></div><div class="cl st-open"><span class="kind">papers</span> <strong>07.04.2027</strong> <span class="days" data-deadline="2027-04-07">in 166 days</span><div class="note">short and long papers, notification 05.05.2027</div></div><div class="cl st-open"><span class="kind">posters demos</span> <strong>19.05.2027</strong> <span class="days" data-deadline="2027-05-19">in 208 days</span><div class="note">notification 09.06.2027</div></div><div class="cl st-open"><span class="kind">artifacts</span> <strong>01.06.2027</strong> <span class="days" data-deadline="2027-06-01">in 221 days</span><div class="note">notification 30.06.2027</div></div></td>
+        <td class="call"><div class="cl st-open" data-cat="workshops"><span class="kind">workshops</span> <strong>03.03.2027</strong> <span class="days" data-deadline="2027-03-03">in 131 days</span><div class="note">workshops and tutorials, notification 24.03.2027</div></div><div class="cl st-open" data-cat="papers"><span class="kind">abstracts</span> <strong>01.04.2027</strong> <span class="days" data-deadline="2027-04-01">in 160 days</span><div class="note">abstracts for short and long papers</div></div><div class="cl st-open" data-cat="papers"><span class="kind">papers</span> <strong>07.04.2027</strong> <span class="days" data-deadline="2027-04-07">in 166 days</span><div class="note">short and long papers, notification 05.05.2027</div></div><div class="cl st-open" data-cat="posters"><span class="kind">posters demos</span> <strong>19.05.2027</strong> <span class="days" data-deadline="2027-05-19">in 208 days</span><div class="note">notification 09.06.2027</div></div><div class="cl st-open" data-cat=""><span class="kind">artifacts</span> <strong>01.06.2027</strong> <span class="days" data-deadline="2027-06-01">in 221 days</span><div class="note">notification 30.06.2027</div></div></td>
         <td class="crawl"><span class="cand ok" title="03.03.2027 Einreichung von Workshops / Tutorials">03.03.2027 <span class="muted">near “einreichung von workshops”</span></span><br><span class="cand ok" title="07.04.2027 Einreichung von Kurz- und Langbeiträgen">07.04.2027 <span class="muted">near “einreichung von kurz”</span></span><br><span class="cand ok" title="19.05.2027 Einreichung von Poster- und Demo-Beiträgen">19.05.2027 <span class="muted">near “einreichung von poster”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://delfi-tagung.de/2027/">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>EADTU I-HE 2027</strong><div class="note">Innovating Higher Education Conference</div><span class="chip">digital-education</span></td>
+      <tr class="ev-guessed" data-conf="2027-10-01" data-dl-all="2027-05-27" data-dl-papers="2027-05-27" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>EADTU I-HE 2027</strong><div class="note">Innovating Higher Education Conference</div><span class="chip">digital-education</span></td>
         <td>EADTU (European distance and open universities)</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>not announced (2026 Open Universiteit, The Hague)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">October 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">abstracts</span> typically 27.05.2027 <span class="muted">(last: 27.05.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">abstracts</span> typically 27.05.2027 <span class="muted">(last: 27.05.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.fernuni-hagen.de/openeu/aktuelles/index.shtml">previous edition</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>OEB Global 2027</strong><div class="note">OEB Global (Online Educa Berlin)</div><span class="chip">digital-education</span></td>
+      <tr class="ev-partial" data-conf="2027-12-01" data-dl-all="2027-05-29" data-dl-papers="2027-05-29" data-dl-workshops="2027-05-29" data-dl-posters="2027-05-29" data-dl-special="2027-05-29" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>OEB Global 2027</strong><div class="note">OEB Global (Online Educa Berlin)</div><span class="chip">digital-education</span></td>
         <td>OEB / ICWE, conference with trade fair<div class="note">mixed academia and industry</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>Berlin, Germany</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">early December 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">sessions</span> typically 29.05.2027 <span class="muted">(last: 29.05.2026)</span><div class="note">OEB26 (2.–4.12.2026) call closed 29.05.2026</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">sessions</span> typically 29.05.2027 <span class="muted">(last: 29.05.2026)</span><div class="note">OEB26 (2.–4.12.2026) call closed 29.05.2026</div></div></td>
         <td class="crawl"><span class="cand" title="Exhibition Sponsors Exhibitors Insights News Media Photos Videos Speaker Requirements and Guidelines To join us as a speaker at OEB (Online Educa Berlin) on 2-4 December 2026, make sure to submit your proposal by 29 May 2026.">04.12.2026 <span class="muted">near “submit”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.oeb.global/node/10084">previous edition</a></td>
       </tr>
-      <tr data-topics="computing-education" data-langs="en">
-        <td><strong>Koli Calling 2027</strong><div class="note">Koli Calling International Conference on Computing Education Research</div><span class="chip">computing-education</span></td>
+      <tr class="ev-partial" data-conf="2027-11-01" data-dl-all="2027-07-12" data-dl-papers="2027-07-12" data-topics="computing-education" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>Koli Calling 2027</strong><div class="note">Koli Calling International Conference on Computing Education Research</div><span class="chip">computing-education</span></td>
         <td>University of Eastern Finland, ACM proceedings</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>Koli, Finland</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">early November 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 12.07.2027 <span class="muted">(last: 12.07.2026)</span><div class="note">full and discussion papers; one pre-conference workshop</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 12.07.2027 <span class="muted">(last: 12.07.2026)</span><div class="note">full and discussion papers; one pre-conference workshop</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.kolicalling.fi/">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>EDEN 2027</strong><div class="note">EDEN Digital Learning Europe Annual Conference</div><span class="chip">digital-education</span></td>
+      <tr class="ev-partial" data-conf="2027-07-04" data-dl-all="9999-12-31" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>EDEN 2027</strong><div class="note">EDEN Digital Learning Europe Annual Conference</div><span class="chip">digital-education</span></td>
         <td>EDEN Digital Learning Europe</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>Winterthur, Switzerland</td>
@@ -227,8 +250,8 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://eden-europe.eu/">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>EC-TEL 2027</strong><div class="note">European Conference on Technology Enhanced Learning</div><span class="chip">digital-education</span></td>
+      <tr class="ev-partial" data-conf="2027-09-01" data-dl-all="9999-12-31" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>EC-TEL 2027</strong><div class="note">European Conference on Technology Enhanced Learning</div><span class="chip">digital-education</span></td>
         <td>EA-TEL, Springer LNCS</td>
         <td class="rank">B</td>
         <td>not announced (2026 Valencia)</td>
@@ -238,8 +261,8 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://ea-tel.eu/">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="de">
-        <td><strong>GMW 2027</strong><div class="note">Jahrestagung der Gesellschaft für Medien in der Wissenschaft</div><span class="chip">digital-education</span></td>
+      <tr class="ev-partial" data-conf="2027-09-01" data-dl-all="9999-12-31" data-topics="digital-education" data-langs="de">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>GMW 2027</strong><div class="note">Jahrestagung der Gesellschaft für Medien in der Wissenschaft</div><span class="chip">digital-education</span></td>
         <td>Gesellschaft für Medien in der Wissenschaft<div class="note">German-speaking society conference</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>not announced (2026 Hochschule Campus Wien)</td>
@@ -254,39 +277,41 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="North America">
     <h3>North America</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="sotl" data-langs="en">
-        <td><strong>SoTL Commons 2027</strong><div class="note">SoTL Commons Conference</div><span class="chip">sotl</span></td>
+      <tr class="ev-confirmed" data-conf="2027-03-03" data-dl-all="2026-10-23" data-dl-papers="2026-10-23" data-dl-workshops="2026-10-23" data-dl-posters="2026-10-23" data-dl-special="2026-10-23" data-topics="sotl" data-langs="en">
+        <td><span class="sr">confirmed for this edition: </span><strong>SoTL Commons 2027</strong><div class="note">SoTL Commons Conference</div><span class="chip">sotl</span></td>
         <td>Georgia Southern University</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>Hyatt Regency Riverfront, Savannah, USA</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">03.–05.03.2027</td>
-        <td class="call"><div class="cl st-soon"><span class="kind">proposals</span> <strong>23.10.2026</strong> <span class="days" data-deadline="2026-10-23">in 0 days</span></div></td>
+        <td class="call"><div class="cl st-soon" data-cat="papers workshops posters special"><span class="kind">proposals</span> <strong>23.10.2026</strong> <span class="days" data-deadline="2026-10-23">in 0 days</span></div></td>
         <td class="crawl"><span class="cand ok" title="Read More… Proposal Submissions Call for Proposals Opens : August 10, 2026 Proposal Submission Deadline: October 23, 2026 Notice of Proposal Acceptance: Notifications sent on December 7, 2026 Confirmation of Proposal Acceptance : January 15, 2027 To remain in the Conference Progra">23.10.2026 <span class="muted">near “deadline”</span></span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals">website</a></td>
       </tr>
-      <tr data-topics="engineering-education computing-education" data-langs="en">
-        <td><strong>FIE 2027</strong><div class="note">Frontiers in Education</div><span class="chip">engineering-education</span><span class="chip">computing-education</span></td>
+      <tr class="ev-guessed" data-conf="2027-10-01" data-dl-all="2027-02-23" data-dl-workshops="2027-02-23" data-dl-special="2027-02-23" data-topics="engineering-education computing-education" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>FIE 2027</strong><div class="note">Frontiers in Education</div><span class="chip">engineering-education</span><span class="chip">computing-education</span></td>
         <td>IEEE Education Society and ASEE</td>
         <td class="rank">C</td>
         <td>not announced, usually North America (2026 Paphos)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">October 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">workshops special sessions</span> typically 23.02.2027 <span class="muted">(last: 23.02.2026)</span><div class="note">alternative sessions: workshops, special sessions, panels</div></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="workshops special"><span class="kind">workshops special sessions</span> typically 23.02.2027 <span class="muted">(last: 23.02.2026)</span><div class="note">alternative sessions: workshops, special sessions, panels</div></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://fie-conference.org/2026">previous edition</a></td>
       </tr>
-      <tr data-topics="computing-education ai-literacy" data-langs="en">
-        <td><strong>SIGCITE 2027</strong><div class="note">ACM SIGCITE Conference (formerly SIGITE)</div><span class="chip">computing-education</span><span class="chip">ai-literacy</span></td>
+      <tr class="ev-guessed" data-conf="2027-11-01" data-dl-all="2027-08-16" data-dl-papers="2027-08-16" data-dl-special="2027-09-23" data-topics="computing-education ai-literacy" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>SIGCITE 2027</strong><div class="note">ACM SIGCITE Conference (formerly SIGITE)</div><span class="chip">computing-education</span><span class="chip">ai-literacy</span></td>
         <td>ACM SIGCITE</td>
         <td class="rank">National: USA</td>
         <td>not announced (2026 UNC Wilmington)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">November 2027</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 16.08.2027 <span class="muted">(last: 16.08.2026)</span></div><div class="cl st-expected"><span class="kind">special sessions</span> typically 23.09.2027 <span class="muted">(last: 23.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 16.08.2027 <span class="muted">(last: 16.08.2026)</span></div><div class="cl st-expected" data-cat="special"><span class="kind">special sessions</span> typically 23.09.2027 <span class="muted">(last: 23.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://easychair.org/cfp/SIGCITE-26">previous edition</a></td>
       </tr></tbody>
@@ -295,11 +320,13 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="Australia and Asia-Pacific">
     <h3>Australia and Asia-Pacific</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="ai-in-education ai-literacy" data-langs="en">
-        <td><strong>AIED 2027</strong><div class="note">International Conference on Artificial Intelligence in Education (with EDM and L@S)</div><span class="chip">ai-in-education</span><span class="chip">ai-literacy</span></td>
+      <tr class="ev-partial" data-conf="2027-07-18" data-dl-all="9999-12-31" data-topics="ai-in-education ai-literacy" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>AIED 2027</strong><div class="note">International Conference on Artificial Intelligence in Education (with EDM and L@S)</div><span class="chip">ai-in-education</span><span class="chip">ai-literacy</span></td>
         <td>International AIED Society, Springer LNCS</td>
         <td class="rank">A</td>
         <td>Adelaide Convention Centre, Australia</td>
@@ -309,8 +336,8 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://iaied.org/conferences">website</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="en">
-        <td><strong>ICCE 2027</strong><div class="note">International Conference on Computers in Education</div><span class="chip">digital-education</span></td>
+      <tr class="ev-guessed" data-conf="2027-11-01" data-dl-all="9999-12-31" data-topics="digital-education" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>ICCE 2027</strong><div class="note">International Conference on Computers in Education</div><span class="chip">digital-education</span></td>
         <td>Asia-Pacific Society for Computers in Education (APSCE)</td>
         <td class="rank">C</td>
         <td>not announced (2026 Christchurch)</td>
@@ -325,11 +352,13 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="Online">
     <h3>Online</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="sotl" data-langs="en">
-        <td><strong>ISSOTL 2027</strong><div class="note">International Society for the Scholarship of Teaching and Learning Conference</div><span class="chip">sotl</span></td>
+      <tr class="ev-partial" data-conf="2027-10-01" data-dl-all="9999-12-31" data-topics="sotl" data-langs="en">
+        <td><span class="sr">edition entered, deadlines from last year: </span><strong>ISSOTL 2027</strong><div class="note">International Society for the Scholarship of Teaching and Learning Conference</div><span class="chip">sotl</span></td>
         <td>ISSOTL</td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>virtual, the first online-only ISSOTL</td>
@@ -344,28 +373,30 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="Europe">
     <h3>Europe</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="sotl" data-langs="de en">
-        <td><strong>dghd 2028</strong><div class="note">dghd-Jahrestagung</div><span class="chip">sotl</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+      <tr class="ev-guessed" data-conf="2028-02-01" data-dl-all="2027-08-15" data-dl-papers="2027-08-15" data-dl-workshops="2027-08-15" data-dl-posters="2027-08-15" data-dl-special="2027-08-15" data-topics="sotl" data-langs="de en">
+        <td><span class="sr">guessed from last year: </span><strong>dghd 2028</strong><div class="note">dghd-Jahrestagung</div><span class="chip">sotl</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
         <td>Deutsche Gesellschaft für Hochschuldidaktik<div class="note">German-speaking society conference</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>not announced (2027: USTP St. Pölten, Austria)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">contributions</span> typically 15.08.2027 <span class="muted">(last: 15.08.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers workshops posters special"><span class="kind">contributions</span> typically 15.08.2027 <span class="muted">(last: 15.08.2026)</span></div></td>
         <td class="crawl"><span class="flag">page changed 23.10.2026</span><br><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://dghd.ustp.at/">previous edition</a></td>
       </tr>
-      <tr data-topics="digital-education" data-langs="de en">
-        <td><strong>LEARNTEC 2028</strong><div class="note">LEARNTEC Kongress</div><span class="chip">digital-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+      <tr class="ev-guessed" data-conf="2028-02-01" data-dl-all="9999-12-31" data-dl-papers="9999-12-31" data-dl-workshops="9999-12-31" data-dl-posters="9999-12-31" data-dl-special="9999-12-31" data-topics="digital-education" data-langs="de en">
+        <td><span class="sr">guessed from last year: </span><strong>LEARNTEC 2028</strong><div class="note">LEARNTEC Kongress</div><span class="chip">digital-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
         <td>Messe Karlsruhe<div class="note">trade fair with congress</div></td>
         <td class="rank"><span class="muted">not listed</span></td>
         <td>not announced (2027: Messe Karlsruhe, Germany)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">de</span><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span><div class="note">no proceedings</div></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-unknown"><span class="kind">congress</span> date unknown</div></td>
+        <td class="call"><div class="cl st-unknown" data-cat="papers workshops posters special"><span class="kind">congress</span> date unknown</div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.learntec.de/">previous edition</a></td>
       </tr></tbody>
@@ -374,17 +405,19 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="North America">
     <h3>North America</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="computing-education" data-langs="en">
-        <td><strong>SIGCSE TS 2028</strong><div class="note">ACM SIGCSE Technical Symposium</div><span class="chip">computing-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+      <tr class="ev-guessed" data-conf="2028-02-01" data-dl-all="2027-07-03" data-dl-papers="2027-07-03" data-dl-posters="2027-09-30" data-dl-special="2027-07-03" data-topics="computing-education" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>SIGCSE TS 2028</strong><div class="note">ACM SIGCSE Technical Symposium</div><span class="chip">computing-education</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
         <td>ACM SIGCSE</td>
         <td class="rank">A</td>
         <td>not announced (2027: SAFE Credit Union Convention Center, Sacramento, USA)</td>
         <td class="nowrap"><span class="lang inferred" title="inferred from the call text, programme or publisher, not stated in the call">en</span></td>
         <td class="nowrap">February 2028</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">papers</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected"><span class="kind">special sessions</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected"><span class="kind">posters lightning talks</span> typically 30.09.2027 <span class="muted">(last: 30.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="papers"><span class="kind">papers</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="special"><span class="kind">special sessions</span> typically 03.07.2027 <span class="muted">(last: 03.07.2026)</span></div><div class="cl st-expected" data-cat="posters"><span class="kind">posters lightning talks</span> typically 30.09.2027 <span class="muted">(last: 30.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://2027.sigcse-ts.acm.org/">previous edition</a></td>
       </tr></tbody>
@@ -393,17 +426,19 @@ Deadlines due within 45 days are marked red. Each series shows its next edition 
     <div class="cblock" data-continent="South America">
     <h3>South America</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
-      <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th>
+      <th aria-sort="none" data-sort="conf"><button type="button" class="sort">Conference</button></th>
+      <th aria-sort="ascending" data-sort="deadline"><button type="button" class="sort">Calls</button>
+      <select class="callsort" aria-label="Show and sort by the deadline of"><option value="all">all calls</option><option value="papers">papers</option><option value="workshops">workshops</option><option value="posters">posters</option><option value="special">special sessions</option></select></th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>
-      <tr data-topics="learning-analytics" data-langs="en">
-        <td><strong>LAK 2028</strong><div class="note">International Conference on Learning Analytics and Knowledge</div><span class="chip">learning-analytics</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
+      <tr class="ev-guessed" data-conf="2028-03-01" data-dl-all="2027-09-21" data-dl-workshops="2027-09-21" data-topics="learning-analytics" data-langs="en">
+        <td><span class="sr">guessed from last year: </span><strong>LAK 2028</strong><div class="note">International Conference on Learning Analytics and Knowledge</div><span class="chip">learning-analytics</span><div class="note">not yet in the registry, guessed from the last edition</div></td>
         <td>Society for Learning Analytics Research (SoLAR), ACM proceedings</td>
         <td class="rank">A</td>
         <td>not announced (2027: Recife, Brazil)</td>
         <td class="nowrap"><span class="lang">en</span><div class="note">talks: en es pt</div></td>
         <td class="nowrap">March 2028</td>
-        <td class="call"><div class="cl st-expected"><span class="kind">workshops</span> typically 21.09.2027 <span class="muted">(last: 21.09.2026)</span></div></td>
+        <td class="call"><div class="cl st-expected" data-cat="workshops"><span class="kind">workshops</span> typically 21.09.2027 <span class="muted">(last: 21.09.2026)</span></div></td>
         <td class="crawl"><span class="muted">checked 23.10.2026</span></td>
         <td><a href="https://www.solaresearch.org/events/lak/lak27/">previous edition</a></td>
       </tr></tbody>
@@ -425,6 +460,28 @@ publisher the registry does not list (hover for the phrase). It never changes th
 </main>
 <script>
 const checked = sel => new Set([...document.querySelectorAll(sel + ' input')].filter(b => b.checked).map(b => b.value));
+// Table order: by the next deadline of the chosen call category, or by conference date.
+const order = { key: 'deadline', cat: 'all' };
+const dlKey = () => 'dl' + order.cat[0].toUpperCase() + order.cat.slice(1);
+function sortRows() {
+  const key = order.key === 'conf' ? 'conf' : dlKey();
+  const val = tr => tr.dataset[key] || '9999-12-31';
+  document.querySelectorAll('tbody').forEach(tb => {
+    [...tb.rows].sort((a, b) => val(a).localeCompare(val(b)) || a.dataset.conf.localeCompare(b.dataset.conf))
+      .forEach(tr => tb.appendChild(tr));
+  });
+  document.querySelectorAll('th[data-sort]').forEach(th =>
+    th.setAttribute('aria-sort', th.dataset.sort === order.key ? 'ascending' : 'none'));
+  document.querySelectorAll('.callsort').forEach(s => { s.value = order.cat; });
+  document.querySelectorAll('.cl').forEach(l =>
+    l.classList.toggle('dim', order.cat !== 'all' && !l.dataset.cat.split(' ').includes(order.cat)));
+}
+document.querySelectorAll('th[data-sort] button').forEach(b => b.addEventListener('click', () => {
+  order.key = b.closest('th').dataset.sort; sortRows();
+}));
+document.querySelectorAll('.callsort').forEach(s => s.addEventListener('change', () => {
+  order.cat = s.value; order.key = 'deadline'; sortRows(); apply();
+}));
 // Continents picked on the map; empty means all.
 const picked = new Set();
 const toggles = document.querySelectorAll('.region, .region-btn');
@@ -432,7 +489,8 @@ function apply() {
   const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {
     const t = tr.dataset.topics.split(' '), l = tr.dataset.langs.split(' ');
-    tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x));
+    const noCall = order.cat !== 'all' && !(dlKey() in tr.dataset);
+    tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x)) || noCall;
   });
   document.querySelectorAll('.cblock').forEach(b => {
     const shown = picked.size === 0 || picked.has(b.dataset.continent);
