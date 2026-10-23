@@ -138,6 +138,17 @@ def test_crawl_of_an_edition_without_url(tmp_path):
     assert (res["url"], res["error"]) == (None, "no URL")
 
 
+def test_crawl_reads_the_call_page_and_stands_in_for_a_missing_edition_page(tmp_path):
+    series = {**REG["series"][1], "keywords": ["paper"]}
+    series["editions"] = {2027: {"url": "https://b.org/", "call_url": "https://cfp.b.org/2027", "start": "2027-02-01"}}
+    pages = {"https://cfp.b.org/2027": (200, "<p>Papers must be submitted in English by 10 December 2026.</p>")}
+    res = crawl.crawl_series(FakeSession(pages), series, date(2026, 10, 23), tmp_path)
+    assert res["status"] == 404 and "error" not in res
+    assert res["call_url"] == {"url": "https://cfp.b.org/2027", "status": 200}
+    assert [c["when"] for c in res["candidates"]] == ["2026-12-10"]
+    assert res["language_hints"][0]["languages"] == ["en"]
+
+
 class BrokenSession(FakeSession):
     def get(self, url, **_):
         raise crawl.requests.ConnectionError(url)

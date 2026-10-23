@@ -1,14 +1,20 @@
 {
   "id": "oeb",
   "edition": 2027,
-  "url": "https://is.oeb.global/conference/submit-a-proposal",
-  "checked": "2026-10-23T18:51:49+00:00",
+  "url": "https://www.oeb.global/node/10084",
+  "checked": "2026-10-23T19:02:01+00:00",
   "status": 200,
-  "final_url": "https://is.oeb.global/conference/submit-a-proposal",
-  "sha256": "51fe7f731c688738107a1a506fdd89beeb0f7ab2e1545f5a4fa671b80f0cbb31",
+  "final_url": "https://oeb.global/conference/speaker-requirements-and-guidelines",
+  "sha256": "2820ab91f9309c3b9d0765c03a5cb4123cf0caac89fe983b332df74aa2f957b9",
   "sha256_of": "date-lines",
   "changed_on": null,
-  "first_seen": "2026-10-23T10:29:18+00:00",
-  "candidates": [],
+  "first_seen": "2026-10-23T19:02:01+00:00",
+  "candidates": [
+    {
+      "when": "2026-12-04",
+      "keyword": "submit",
+      "context": "Exhibition Sponsors Exhibitors Insights News Media Photos Videos Speaker Requirements and Guidelines To join us as a speaker at OEB (Online Educa Berlin) on 2-4 December 2026, make sure to submit your proposal by 29 May 2026."
+    }
+  ],
   "language_hints": []
 }

@@ -158,6 +158,13 @@ def test_validate_catches_placeholders_empty_editions_and_types():
     assert "a: no editions" in problems
     assert "b: topics must be a list of words, not 'ai'" in problems
     assert "b 2027 papers: closed must be true or false, not 'yes'" in problems
+    same = {
+        "id": "c",
+        "name": "C",
+        "continent": "Online",
+        "editions": {2027: {"url": "https://c.org", "call_url": "https://c.org"}},
+    }
+    assert "c 2027: call_url is the same as url, leave it out" in registry.validate({"series": [same]})
 
 
 def test_validate_reports_a_registry_without_series():

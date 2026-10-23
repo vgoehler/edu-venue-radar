@@ -2,12 +2,16 @@
   "id": "csedu",
   "edition": 2027,
   "url": "https://csedu.scitevents.org/",
-  "checked": "2026-10-23T18:51:24+00:00",
+  "checked": "2026-10-23T19:01:48+00:00",
+  "call_url": {
+    "url": "https://csedu.scitevents.org/CallForPapers.aspx",
+    "status": 200
+  },
   "status": 200,
   "final_url": "https://csedu.scitevents.org/",
-  "sha256": "c4f722422a4556e601e79d53ab7b7702b01a1f964464c0bd10dfef3150de961d",
+  "sha256": "57550caad68748b7a20d2d9f995b4532988d8d3879f8894738763bcb961cf0d7",
   "sha256_of": "date-lines",
-  "changed_on": null,
+  "changed_on": "2026-10-23T19:01:48+00:00",
   "first_seen": "2026-10-23T10:28:17+00:00",
   "candidates": [
     {
@@ -16,12 +20,29 @@
       "context": "Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Educa"
     },
     {
+      "when": "2026-11-27",
+      "keyword": "paper submission",
+      "context": "ar Papers Paper Submission: December 21, 2026 Authors Notification: February 15, 2027 Camera Ready and Registration: March 1, 2027 Workshops Workshop Proposal: November 27, 2026 Paper Submission: February 16, 2027 Authors Notification: March 2, 2027 Camera Ready and Registration: March 10, 2027 Special Sessions Special Session Proposal"
+    },
+    {
       "when": "2026-12-21",
       "keyword": "paper submission",
       "context": "Upcoming Submission Deadlines Regular Paper Submission: November 17, 2026 Position/Regular Paper Submission: December 21, 2026 (See Important Dates for more information) CSEDU, the International Conference on Computer Supported Education, is a yearly meeting place for presenting and di"
+    },
+    {
+      "when": "2027-02-16",
+      "keyword": "paper submission",
+      "context": "21, 2026 Authors Notification: February 15, 2027 Camera Ready and Registration: March 1, 2027 Workshops Workshop Proposal: November 27, 2026 Paper Submission: February 16, 2027 Authors Notification: March 2, 2027 Camera Ready and Registration: March 10, 2027 Special Sessions Special Session Proposal: November 27, 2026 Paper Submission"
     }
   ],
   "language_hints": [
+    {
+      "kind": "statement",
+      "phrase": "submit a paper in English",
+      "languages": [
+        "en"
+      ]
+    },
     {
       "kind": "publisher",
       "phrase": "SCITEPRESS",

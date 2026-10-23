@@ -125,6 +125,8 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
         rank_html = '<span class="muted">not listed</span>'
     link_label = "previous edition" if ed.url_is_fallback else "website"
     link = f'<a href="{escape(ed.url)}">{link_label}</a>' if ed.url else ""
+    if ed.call_url:
+        link += f'<br><a href="{escape(ed.call_url)}">call</a>'
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
     html = f"""
       <tr data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">

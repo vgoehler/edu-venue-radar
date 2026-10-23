@@ -67,12 +67,16 @@ series:
     editions:
       2027:
         url: https://csedu.scitevents.org/
+        call_url: https://csedu.scitevents.org/CallForPapers.aspx
         location: Rome, Italy (unconfirmed)
         when: April 2027
         calls:
           papers:
             deadline: 2026-11-17
             note: second round (position/regular papers) 21.12.2026
+          workshops:
+            deadline: 2026-11-27
+            note: proposals for new workshops, https://csedu.scitevents.org/Workshops.aspx
 
   - id: educon
     name: EDUCON
@@ -90,6 +94,7 @@ series:
     editions:
       2027:
         url: https://educon-conference.org/2027
+        call_url: https://educon-conference.org/2027/authors/call-for-papers
         location: Timișoara, Romania
         start: 2027-04-06
         end: 2027-04-09
@@ -143,6 +148,7 @@ series:
     editions:
       2027:
         url: https://iticse.acm.org/2027/
+        call_url: https://iticse.acm.org/2027/call-for-papers/
         location: University of Glasgow, Scotland
         start: 2027-07-12
         end: 2027-07-14
@@ -354,12 +360,14 @@ series:
     keywords: [proposal, deadline, submit]
     editions:
       2027:
-        url: https://is.oeb.global/conference/submit-a-proposal
+        url: https://www.oeb.global/node/10084
+        url_is_fallback: true
         location: Berlin, Germany
         when: early December 2027
         calls:
           sessions:
-            deadline_hint: 2025-05-31
+            deadline_hint: 2026-05-29
+            note: OEB26 (2.–4.12.2026) call closed 29.05.2026
 
   - id: dghd
     name: dghd
@@ -368,10 +376,10 @@ series:
     kind: German-speaking society conference
     icore: null
     continent: Europe
-    # languages: submission procedure page of the 2027 host, since removed; no regular proceedings
+    # languages: submission procedure page of the 2027 host allowed de or en (seen in a search snippet; page removed); no regular proceedings
     languages: [de, en]
     proceedings_languages: []
-    language_source: stated
+    language_source: inferred
     topics: [sotl]
     keywords: [einreichung, workshop, frist]
     editions:
@@ -401,8 +409,10 @@ series:
     editions:
       2027:
         url: https://www.learntec.de/
+        call_url: https://www.learntec.de/de/fokus/der-kongress/
         location: Messe Karlsruhe, Germany
-        when: May 2027
+        start: 2027-02-02
+        end: 2027-02-04
         calls:
           congress:
             closed: true
@@ -453,9 +463,9 @@ series:
         when: November 2027
         calls:
           papers:
-            deadline_hint: 2026-08-02
+            deadline_hint: 2026-08-16
           special-sessions:
-            deadline_hint: 2026-09-27
+            deadline_hint: 2026-09-23
 
   - id: sigcse-ts
     name: SIGCSE TS
@@ -472,7 +482,8 @@ series:
     keywords: [special session, panel, deadline]
     editions:
       2027:
-        url: https://sigcse-ts.acm.org/2027/
+        url: https://2027.sigcse-ts.acm.org/
+        call_url: https://2027.sigcse-ts.acm.org/track/sigcse-ts-2027-Papers-1
         location: SAFE Credit Union Convention Center, Sacramento, USA
         start: 2027-02-17
         end: 2027-02-20
@@ -525,6 +536,7 @@ series:
     editions:
       2027:
         url: https://www.solaresearch.org/events/lak/lak27/
+        call_url: https://www.solaresearch.org/events/lak/lak27/general-call/
         location: Recife, Brazil
         start: 2027-03-08
         end: 2027-03-12

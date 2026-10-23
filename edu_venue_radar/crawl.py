@@ -82,21 +82,32 @@ def conference_start(ed: Edition) -> date | None:
     return ed.approx_start if month_of(ed.when or "") else None
 
 
-def _edition_text(session: requests.Session, series: SeriesData, ed: Edition) -> tuple[Fetched, PageRecord | None]:
-    """The edition page and, for series that keep their dates on a separate page, that page's record.
+ExtraPage = Literal["deadlines_url", "call_url"]
 
-    The separate page's text is appended to the edition page's text.
+
+def _edition_text(session: requests.Session, series: SeriesData, ed: Edition) -> tuple[Fetched, dict[ExtraPage, PageRecord]]:
+    """The edition page with the text of its extra pages appended, and a record of each extra page.
+
+    Extra pages are the separate dates page of series that keep their dates apart, and the
+    edition's call page. Without a usable edition page the call page stands in for it.
     """
-    if not ed.url:
-        return Fetched("", error="no URL"), None
-    page = fetch(session, ed.url)
+    page = fetch(session, ed.url) if ed.url else Fetched("", error="no URL")
+    extras: list[tuple[ExtraPage, str]] = []
     pattern = series.get("deadlines_pattern")
-    if not pattern or page.text is None:
-        return page, None
-    extra = fetch(session, url_for(pattern, ed.year))
-    if extra.text:
-        page.text = f"{page.text} {extra.text}"
-    return page, {"url": extra.url, "status": extra.status}
+    if pattern and page.text is not None:
+        extras.append(("deadlines_url", url_for(pattern, ed.year)))
+    if ed.call_url and ed.call_url != ed.url:
+        extras.append(("call_url", ed.call_url))
+    records: dict[ExtraPage, PageRecord] = {}
+    texts = [page.text] if page.text is not None else []
+    for key, url in extras:
+        extra = fetch(session, url)
+        records[key] = {"url": extra.url, "status": extra.status}
+        if extra.text:
+            texts.append(extra.text)
+    if texts:
+        page.text = " ".join(texts)
+    return page, records
 
 
 def _record_change(result: CrawlRecord, previous: CrawlRecord, digest: str) -> None:
@@ -130,9 +141,9 @@ def crawl_series(session: requests.Session, series: SeriesData, today: date, sta
     now = datetime.now(UTC).isoformat(timespec="seconds")
 
     result: CrawlRecord = {"id": series["id"], "edition": ed.year, "url": ed.url, "checked": now}
-    page, deadlines_page = _edition_text(session, series, ed)
-    if deadlines_page:
-        result["deadlines_url"] = deadlines_page
+    page, extras = _edition_text(session, series, ed)
+    for extra_key, record in extras.items():
+        result[extra_key] = record
     result["status"], result["final_url"] = page.status, page.final_url
 
     if page.text is not None:

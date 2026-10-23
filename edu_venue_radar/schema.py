@@ -21,6 +21,7 @@ class CallData(TypedDict, total=False):
 class EditionData(TypedDict, total=False):
     url: str
     url_is_fallback: bool
+    call_url: str
     location: str
     start: DateValue
     end: DateValue
@@ -89,6 +90,7 @@ class CrawlRecord(TypedDict, total=False):
     status: int | None
     final_url: str | None
     deadlines_url: PageRecord
+    call_url: PageRecord
     sha256: str
     sha256_of: str
     changed_on: str | None

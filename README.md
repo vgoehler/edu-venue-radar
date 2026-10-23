@@ -6,8 +6,8 @@ The radar lists venues and nothing else. Which venue suits which project is deci
 
 ## Idea
 
-- `registry.yaml` holds what a person has confirmed: per series the organizer, topics, ICORE acronym, URL pattern, submission, talk and proceedings languages (marked as stated in the call or inferred), and per edition location, dates and its calls with their deadlines. It is the only thing edited by hand.
-- The **crawler** fetches each series' current page once a week, notices when it changed, lists future dates that stand next to the call keywords, probes whether the next edition's page is online yet, and notes explicit language statements ("must be submitted in English", "Beiträge auf Deutsch oder Englisch") and proceedings publishers that the registry does not list. It writes `data/crawl/<id>.json` and never touches the registry.
+- `registry.yaml` holds what a person has confirmed: per series the organizer, topics, ICORE acronym, URL pattern, submission, talk and proceedings languages (marked as stated in the call or inferred), and per edition location, dates, the call page if it has its own (`call_url`) and its calls with their deadlines. It is the only thing edited by hand.
+- The **crawler** fetches each series' current page (plus its call page and separate dates page, where entered) once a week, notices when it changed, lists future dates that stand next to the call keywords, probes whether the next edition's page is online yet, and notes explicit language statements ("must be submitted in English", "Beiträge auf Deutsch oder Englisch") and proceedings publishers that the registry does not list. It writes `data/crawl/<id>.json` and never touches the registry.
 - **ICORE** ranks come from the portal (`data/icore.json`), always from the newest ranking edition it offers.
 - The **page** (`docs/index.html`) shows per series the first edition that still has a call open. When all calls of an edition are over and the next edition is not entered yet, the page guesses it: same month one year later, each call's previous deadline as "typically", previous page as link. So a 2027 edition moves to 2028 by itself.
 

@@ -44,7 +44,7 @@ SERIES_KEYS = {
 SERIES_REQUIRED = {"id", "name", "continent", "editions", "languages", "language_source"}
 LANGUAGE_FIELDS = {"languages", "presentation_languages", "proceedings_languages"}
 LANGUAGE_SOURCES = {"stated", "inferred"}
-EDITION_KEYS = {"url", "url_is_fallback", "location", "start", "end", "when", "calls"}
+EDITION_KEYS = {"url", "url_is_fallback", "call_url", "location", "start", "end", "when", "calls"}
 CALL_KEYS = {"deadline", "deadline_hint", "note", "closed"}
 LIST_FIELDS = {"topics", "keywords"} | LANGUAGE_FIELDS
 BOOL_FIELDS = {"url_is_fallback", "closed"}
@@ -60,6 +60,7 @@ TEXT_FIELDS = {
     "deadlines_pattern",
     "layout",
     "url",
+    "call_url",
     "location",
     "when",
     "note",
@@ -145,6 +146,7 @@ class Edition:
     when: str | None
     calls: list[Call] = field(default_factory=list)
     synthesized: bool = False
+    call_url: str | None = None
 
     @property
     def approx_start(self) -> date:
@@ -189,6 +191,7 @@ def edition(series: SeriesData, year: int) -> Edition:
         start=to_date(raw.get("start")),
         end=to_date(raw.get("end")),
         when=raw.get("when"),
+        call_url=raw.get("call_url"),
     )
     for kind, raw_call in (raw.get("calls") or {}).items():
         c: CallData = raw_call or {}
@@ -296,6 +299,8 @@ def _check_types(where: str, raw: SeriesData | EditionData | CallData) -> list[s
 def _check_edition(where: str, ed: EditionData) -> list[str]:
     problems = [f"{where}: unknown field {k}" for k in sorted(set(ed) - EDITION_KEYS)]
     problems += _check_types(where, ed) + _check_dates(where, ed, ("start", "end"))
+    if ed.get("call_url") and ed.get("call_url") == ed.get("url"):
+        problems.append(f"{where}: call_url is the same as url, leave it out")
     for kind, raw_call in (ed.get("calls") or {}).items():
         call: CallData = raw_call or {}
         problems += [f"{where} {kind}: unknown field {k}" for k in sorted(set(call) - CALL_KEYS)]
