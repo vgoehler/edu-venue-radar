@@ -10,6 +10,8 @@ REGISTRY = """series:
     name: X
     icore: XCONF
     continent: Europe
+    languages: [de, en]
+    language_source: stated
     url_pattern: https://x.org/{year}/
     editions:
       2027:

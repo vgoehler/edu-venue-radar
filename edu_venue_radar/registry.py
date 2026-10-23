@@ -5,6 +5,7 @@ which edition is current, what its deadline probably is, and what the next editi
 looks like before anyone has entered it.
 """
 
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
@@ -35,11 +36,17 @@ SERIES_KEYS = {
     "keywords",
     "layout",
     "editions",
+    "languages",
+    "presentation_languages",
+    "proceedings_languages",
+    "language_source",
 }
-SERIES_REQUIRED = {"id", "name", "continent", "editions"}
+SERIES_REQUIRED = {"id", "name", "continent", "editions", "languages", "language_source"}
+LANGUAGE_FIELDS = {"languages", "presentation_languages", "proceedings_languages"}
+LANGUAGE_SOURCES = {"stated", "inferred"}
 EDITION_KEYS = {"url", "url_is_fallback", "location", "start", "end", "when", "calls"}
 CALL_KEYS = {"deadline", "deadline_hint", "note", "closed"}
-LIST_FIELDS = {"topics", "keywords"}
+LIST_FIELDS = {"topics", "keywords"} | LANGUAGE_FIELDS
 BOOL_FIELDS = {"url_is_fallback", "closed"}
 TEXT_FIELDS = {
     "id",
@@ -56,6 +63,7 @@ TEXT_FIELDS = {
     "location",
     "when",
     "note",
+    "language_source",
 }
 
 
@@ -296,6 +304,20 @@ def _check_edition(where: str, ed: EditionData) -> list[str]:
     return problems
 
 
+def _check_languages(sid: str, s: SeriesData) -> list[str]:
+    problems = []
+    if "language_source" in s and s["language_source"] not in LANGUAGE_SOURCES:
+        problems.append(f"{sid}: language_source must be stated or inferred, not {s['language_source']!r}")
+    for key in sorted(LANGUAGE_FIELDS & set(s)):
+        value: object = s.get(key)
+        bad = [c for c in value if not re.fullmatch("[a-z]{2}", str(c))] if isinstance(value, list) else []
+        if bad:
+            problems.append(f"{sid}: {key} takes ISO 639-1 codes like en or de, not {bad!r}")
+    if s.get("languages") == []:
+        problems.append(f"{sid}: languages is empty")
+    return problems
+
+
 def _check_series(sid: str, s: SeriesData) -> list[str]:
     problems = [f"{sid}: missing field {k}" for k in sorted(SERIES_REQUIRED - set(s))]
     problems += [f"{sid}: unknown field {k}" for k in sorted(set(s) - SERIES_KEYS)]
@@ -304,6 +326,7 @@ def _check_series(sid: str, s: SeriesData) -> list[str]:
         problems.append(f"{sid}: unknown continent {s['continent']!r}")
     if s.get("layout", "prose") not in LAYOUTS:
         problems.append(f"{sid}: unknown layout {s['layout']!r}")
+    problems += _check_languages(sid, s)
     for key in ("url_pattern", "deadlines_pattern"):
         pattern = s.get(key)
         if isinstance(pattern, str):

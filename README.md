@@ -1,13 +1,13 @@
 # Digital Education Venue Radar
 
-Keeps track of conferences on digital education, AI in education, computing education and the Scholarship of Teaching and Learning. It publishes one page through GitHub Pages, grouped by conference year and continent, with every call of an edition (workshops, papers, special sessions, ...), its deadline, the organizer and the ICORE rank.
+Keeps track of conferences on digital education, AI in education, computing education and the Scholarship of Teaching and Learning. It publishes one page through GitHub Pages, grouped by conference year and continent, with every call of an edition (workshops, papers, special sessions, ...), its deadline, the organizer, the ICORE rank and the languages a contribution may be written in.
 
 The radar lists venues and nothing else. Which venue suits which project is decided elsewhere, by whoever uses the list.
 
 ## Idea
 
-- `registry.yaml` holds what a person has confirmed: per series the organizer, topics, ICORE acronym, URL pattern, and per edition location, dates and its calls with their deadlines. It is the only thing edited by hand.
-- The **crawler** fetches each series' current page once a week, notices when it changed, lists future dates that stand next to the call keywords, and probes whether the next edition's page is online yet. It writes `data/crawl/<id>.json` and never touches the registry.
+- `registry.yaml` holds what a person has confirmed: per series the organizer, topics, ICORE acronym, URL pattern, submission, talk and proceedings languages (marked as stated in the call or inferred), and per edition location, dates and its calls with their deadlines. It is the only thing edited by hand.
+- The **crawler** fetches each series' current page once a week, notices when it changed, lists future dates that stand next to the call keywords, probes whether the next edition's page is online yet, and notes explicit language statements ("must be submitted in English", "Beiträge auf Deutsch oder Englisch") and proceedings publishers that the registry does not list. It writes `data/crawl/<id>.json` and never touches the registry.
 - **ICORE** ranks come from the portal (`data/icore.json`), always from the newest ranking edition it offers.
 - The **page** (`docs/index.html`) shows per series the first edition that still has a call open. When all calls of an edition are over and the next edition is not entered yet, the page guesses it: same month one year later, each call's previous deadline as "typically", previous page as link. So a 2027 edition moves to 2028 by itself.
 

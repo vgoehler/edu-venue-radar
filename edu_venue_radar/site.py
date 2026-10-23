@@ -54,7 +54,40 @@ def calls_cell(ed: Edition, today: date) -> str:
     return "".join(call_line(c, today) for c in calls)
 
 
-def crawl_cell(crawl: CrawlRecord | None, ed: Edition) -> str:
+def languages_cell(series: SeriesData) -> str:
+    """Submission languages as chips, then talks and proceedings where they differ."""
+    inferred = series.get("language_source") != "stated"
+    cls = "lang inferred" if inferred else "lang"
+    tip = ' title="inferred from the call text, programme or publisher, not stated in the call"' if inferred else ""
+    langs = series.get("languages", [])
+    parts = ["".join(f'<span class="{cls}"{tip}>{escape(c)}</span>' for c in langs)]
+    talks = series.get("presentation_languages")
+    if talks and talks != langs:
+        parts.append(f'<div class="note">talks: {escape(" ".join(talks))}</div>')
+    proceedings = series.get("proceedings_languages")
+    if proceedings == []:
+        parts.append('<div class="note">no proceedings</div>')
+    elif proceedings and proceedings != langs:
+        parts.append(f'<div class="note">proceedings: {escape(" ".join(proceedings))}</div>')
+    return "".join(parts)
+
+
+def language_flags(crawl: CrawlRecord, series: SeriesData) -> list[str]:
+    """Language hints from the page that the registry does not cover yet."""
+    known = set(series.get("languages", [])) | set(series.get("presentation_languages", []))
+    proceedings = set(series.get("proceedings_languages", known))
+    flags = []
+    for hint in crawl.get("language_hints", []):
+        expected = proceedings if hint["kind"] == "publisher" else known
+        if hint["languages"] and not set(hint["languages"]) <= expected:
+            flags.append(
+                f'<span class="warn" title="{escape(hint["phrase"])}">language? '
+                f"{escape(' '.join(hint['languages']))} ({escape(hint['kind'])})</span>"
+            )
+    return flags
+
+
+def crawl_cell(crawl: CrawlRecord | None, ed: Edition, series: SeriesData) -> str:
     if not crawl:
         return '<span class="muted">not crawled yet</span>'
     parts = []
@@ -70,6 +103,7 @@ def crawl_cell(crawl: CrawlRecord | None, ed: Edition) -> str:
             f'title="{escape(c["context"])}">{fmt(date.fromisoformat(c["when"]))} '
             f'<span class="muted">near “{escape(c["keyword"])}”</span></span>'
         )
+    parts += language_flags(crawl, series)
     for p in crawl.get("probes", []):
         if p.get("exists"):
             parts.append(f'<a class="flag" href="{escape(p["url"])}">page up: {escape(p["url"].split("//", 1)[-1])}</a>')
@@ -93,14 +127,15 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
     link = f'<a href="{escape(ed.url)}">{link_label}</a>' if ed.url else ""
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
     html = f"""
-      <tr data-topics="{escape(topics)}">
+      <tr data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
         <td><strong>{escape(series["name"])} {ed.year}</strong><div class="note">{escape(series.get("full_name", ""))}</div>{chips}{guessed}</td>
         <td>{escape(series.get("organizer", ""))}{kind}</td>
         <td class="rank">{rank_html}</td>
         <td>{escape(ed.location or "")}</td>
+        <td class="nowrap">{languages_cell(series)}</td>
         <td class="nowrap">{escape(conference_text(ed))}</td>
         <td class="call">{calls_cell(ed, today)}</td>
-        <td class="crawl">{crawl_cell(crawl, ed)}</td>
+        <td class="crawl">{crawl_cell(crawl, ed, series)}</td>
         <td>{link}</td>
       </tr>"""
     return (sort_date or date.max), html
@@ -111,6 +146,7 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
     ranks = icore_meta["ranks"] if icore_meta else {}
     groups: dict[int, dict[str, list[tuple[date, str]]]] = defaultdict(lambda: defaultdict(list))
     topics: set[str] = set()
+    languages: set[str] = set()
     for series in registry["series"]:
         ed = current_edition(series, today)
         crawl_file = crawl_dir / f"{series['id']}.json"
@@ -119,6 +155,7 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
             crawl = None
         groups[ed.year][series.get("continent", "Online")].append(row(series, ed, crawl, ranks.get(series["id"]), today))
         topics.update(series.get("topics", []))
+        languages.update(series.get("languages", []))
 
     sections = []
     for year in sorted(groups):
@@ -128,18 +165,22 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
             blocks.append(f"""
     <h3>{escape(continent)}</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Conference</th>
+      <thead><tr><th>Venue</th><th>Organizer</th><th>ICORE</th><th>Location</th><th>Languages</th><th>Conference</th>
       <th>Calls</th><th>Crawler</th><th>Link</th></tr></thead>
       <tbody>{rows}</tbody>
     </table></div>""")
         sections.append(f"<section><h2>Conferences in {year}</h2>{''.join(blocks)}</section>")
 
     filters = "".join(f'<label><input type="checkbox" value="{escape(t)}" checked> {escape(t)}</label>' for t in sorted(topics))
+    language_filters = "".join(
+        f'<label><input type="checkbox" value="{escape(c)}" checked> {escape(c)}</label>' for c in sorted(languages)
+    )
     source = escape(icore_meta["source"] if icore_meta else "ICORE")
     page = TEMPLATE.format(
         today=fmt(today),
         sections="".join(sections),
         filters=filters,
+        language_filters=language_filters,
         icore_source=source,
         soon=SOON_DAYS,
     )
@@ -190,6 +231,8 @@ th {{ background: var(--head); font-size: .85rem; font-weight: 600; }}
 tr:last-child td {{ border-bottom: 0; }}
 .note {{ color: var(--muted); font-size: .82rem; margin-top: 2px; }}
 .muted {{ color: var(--muted); }}
+.lang {{ display: inline-block; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin: 0 4px 2px 0; font-size: .78rem; font-weight: 600; }}
+.lang.inferred {{ font-weight: 400; border-style: dashed; cursor: help; }}
 .chip {{ display: inline-block; background: var(--chip); border-radius: 10px; padding: 0 7px; margin: 4px 4px 0 0; font-size: .75rem; }}
 .nowrap {{ white-space: nowrap; }}
 .rank {{ font-weight: 600; }}
@@ -216,27 +259,32 @@ footer {{ margin-top: 40px; color: var(--muted); font-size: .85rem; max-width: 8
 Teaching and Learning, with their calls, deadlines, organizers and rankings. Built {today}, crawled weekly.
 Deadlines due within {soon} days are marked red. Each series shows its next edition that still has an open call.</p>
 <div class="filters" id="filters"><strong>Topics:</strong> {filters}</div>
+<div class="filters" id="langs"><strong>Submission in:</strong> {language_filters}</div>
 {sections}
 <footer>
 <p><strong>Calls</strong> lists each call of the edition (workshops, papers, special sessions, ...). A bold date is confirmed
 on the official page. “Typically” is the previous cycle's deadline moved to this cycle.</p>
+<p><strong>Languages</strong> are the languages a contribution may be submitted in, with talks and proceedings
+listed where they differ. A solid box means the call states it; a dashed one is inferred from the call text,
+programme or proceedings publisher. The filter keeps venues that accept at least one of the ticked languages.</p>
 <p><strong>ICORE</strong> ({icore_source}) rates the main paper track, A* &gt; A &gt; B &gt; C. A workshop at an A conference
 is not an A publication. Education and German-language venues are not part of ICORE, so “not listed” says nothing about quality there.</p>
 <p><strong>Crawler</strong> shows what the weekly crawl saw: whether the page changed, future dates near the call keywords
-(hover for context; ✓ means it matches the confirmed deadline), and whether the next edition's page is online. It never changes the confirmed data, that is edited in
+(hover for context; ✓ means it matches the confirmed deadline), whether the next edition's page is online, and “language?” when the page names a language or proceedings
+publisher the registry does not list (hover for the phrase). It never changes the confirmed data, that is edited in
 <code>registry.yaml</code>.</p>
 </footer>
 </main>
 <script>
-const boxes = document.querySelectorAll('#filters input');
+const checked = sel => new Set([...document.querySelectorAll(sel + ' input')].filter(b => b.checked).map(b => b.value));
 function apply() {{
-  const on = new Set([...boxes].filter(b => b.checked).map(b => b.value));
+  const topics = checked('#filters'), langs = checked('#langs');
   document.querySelectorAll('tbody tr').forEach(tr => {{
-    const t = tr.dataset.topics.split(' ');
-    tr.hidden = !t.some(x => on.has(x));
+    const t = tr.dataset.topics.split(' '), l = tr.dataset.langs.split(' ');
+    tr.hidden = !t.some(x => topics.has(x)) || !l.some(x => langs.has(x));
   }});
 }}
-boxes.forEach(b => b.addEventListener('change', apply));
+document.querySelectorAll('.filters input').forEach(b => b.addEventListener('change', apply));
 // The page is rebuilt weekly; count the days from the reader's today, not the build day.
 const today = new Date(); today.setHours(0, 0, 0, 0);
 document.querySelectorAll('.days[data-deadline]').forEach(el => {{

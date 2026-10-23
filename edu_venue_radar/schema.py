@@ -43,6 +43,12 @@ class SeriesData(TypedDict, total=False):
     deadlines_pattern: str
     keywords: list[str]
     layout: str
+    # ISO 639-1 codes. presentation_languages only when talks may use others than the
+    # submission; proceedings_languages empty when there are no proceedings.
+    languages: list[str]
+    presentation_languages: list[str]
+    proceedings_languages: list[str]
+    language_source: str
 
 
 class RegistryData(TypedDict):
@@ -67,6 +73,12 @@ class PageRecord(TypedDict):
     status: int | None
 
 
+class LanguageHint(TypedDict):
+    kind: str  # statement or publisher
+    phrase: str
+    languages: list[str]
+
+
 class CrawlRecord(TypedDict, total=False):
     """data/crawl/<id>.json"""
 
@@ -82,6 +94,7 @@ class CrawlRecord(TypedDict, total=False):
     changed_on: str | None
     first_seen: str | None
     candidates: list[CandidateRecord]
+    language_hints: list[LanguageHint]
     error: str
     probes: list[ProbeRecord]
 

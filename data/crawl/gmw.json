@@ -2,7 +2,7 @@
   "id": "gmw",
   "edition": 2027,
   "url": "https://www.gmw-online.de/category/gmw-jahrestagungen/",
-  "checked": "2026-10-23T13:51:55+00:00",
+  "checked": "2026-10-23T18:51:46+00:00",
   "status": 200,
   "final_url": "https://www.gmw-online.de/category/gmw-jahrestagungen/",
   "sha256": "5b761dd312cd49bc45499844a0952a6c4a75e5fad0698cc3ad7835bc9f1d2da7",
@@ -15,5 +15,6 @@
       "keyword": "call",
       "context": "rmation von Lehre und … Beitragsnavigation Ältere Beiträge Suchen nach: Neueste Beiträge Call for Papers “Mediendidaktik im Zeitalter Künstlicher Intelligenz” (15.11.2026) Souverän vernetzt – Hochschulen im digitalen Wandel 8."
     }
-  ]
+  ],
+  "language_hints": []
 }

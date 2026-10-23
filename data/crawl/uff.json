@@ -2,12 +2,13 @@
   "id": "uff",
   "edition": 2027,
   "url": "https://festival.hfd.digital",
-  "checked": "2026-10-23T13:51:48+00:00",
+  "checked": "2026-10-23T18:51:40+00:00",
   "status": 200,
   "final_url": "https://festival.hfd.digital/en/",
   "sha256": "fe29a311c0800a09301b2b02cf194967bd02d141b62a38a41b82cc347f137060",
   "sha256_of": "date-lines",
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:06+00:00",
-  "candidates": []
+  "candidates": [],
+  "language_hints": []
 }

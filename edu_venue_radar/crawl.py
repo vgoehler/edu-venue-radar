@@ -17,6 +17,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from .dates import date_lines, deadline_candidates, month_of
+from .languages import language_hints
 from .registry import Edition, current_edition, url_for
 from .schema import CandidateRecord, CrawlRecord, PageRecord, ProbeRecord, RegistryData, SeriesData
 
@@ -28,8 +29,8 @@ HTTP_OK = 200
 # What `sha256` was taken over; a stored hash of another kind is a baseline, not a change.
 HASH_OF = "date-lines"
 # Kept from the previous run when the page cannot be read this time.
-CarriedKey = Literal["sha256", "sha256_of", "changed_on", "first_seen", "candidates"]
-CARRIED_OVER: tuple[CarriedKey, ...] = ("sha256", "sha256_of", "changed_on", "first_seen", "candidates")
+CarriedKey = Literal["sha256", "sha256_of", "changed_on", "first_seen", "candidates", "language_hints"]
+CARRIED_OVER: tuple[CarriedKey, ...] = ("sha256", "sha256_of", "changed_on", "first_seen", "candidates", "language_hints")
 
 
 @dataclass
@@ -137,6 +138,7 @@ def crawl_series(session: requests.Session, series: SeriesData, today: date, sta
     if page.text is not None:
         _record_change(result, previous, page_digest(page.text))
         result["candidates"] = _candidates(page.text, series, ed, today)
+        result["language_hints"] = language_hints(page.text)
     else:
         result["error"] = page.error or f"HTTP {page.status}"
         if previous.get("url") == ed.url:

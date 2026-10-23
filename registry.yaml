@@ -14,6 +14,10 @@
 #     closed         true when the call is known to be over without a date
 #
 # Series fields:
+#   languages               ISO 639-1 codes a contribution may be submitted in (required)
+#   presentation_languages  only when talks may be given in other languages than the submission
+#   proceedings_languages   languages of the proceedings; [] when there are none
+#   language_source         stated (the call says so) or inferred (from call text, programme, publisher)
 #   url_pattern        edition page with {year} / {yy}; the crawler probes it for the next year
 #   deadlines_pattern  separate page with the dates, crawled together with the edition page
 #   icore              acronym in the ICORE portal, or null for venues ICORE does not list
@@ -30,6 +34,10 @@ series:
     kind: practitioner event, proceedings in Finnish
     icore: null
     continent: Europe
+    # languages: https://itk-konferenssi.fi/en/itk-julkaisu; call in English but programme mostly Finnish; publication is an optional expert volume
+    languages: [fi, en]
+    proceedings_languages: [fi]
+    language_source: inferred
     topics: [digital-education, ai-literacy]
     url_pattern: https://easychair.org/cfp/ITK{year}
     keywords: [call for presentations, workshop, deadline]
@@ -50,6 +58,10 @@ series:
     organizer: INSTICC (commercial organizer, SCITEPRESS proceedings)
     icore: CSEDU
     continent: Europe
+    # languages: https://csedu.scitevents.org/Guidelines.aspx
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: stated
     topics: [digital-education]
     keywords: [paper submission, workshop, deadline]
     editions:
@@ -68,6 +80,10 @@ series:
     organizer: IEEE Education Society
     icore: EDUCON
     continent: Europe
+    # languages: https://educon-conference.org/2027/; IEEE Xplore
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [engineering-education, digital-education]
     url_pattern: https://educon-conference.org/{year}
     keywords: [workshop, special session, abstract, deadline]
@@ -93,6 +109,10 @@ series:
     organizer: European SoTL network, hosted by a university each time
     icore: null
     continent: Europe
+    # languages: call for contributions of the 2025 host; no formal proceedings; host changes yearly
+    languages: [en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [sotl]
     keywords: [call for contributions, proposal, workshop, deadline]
     editions:
@@ -113,6 +133,10 @@ series:
     organizer: ACM SIGCSE
     icore: ITiCSE
     continent: Europe
+    # languages: https://iticse.acm.org/2027/; ACM DL
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [computing-education]
     url_pattern: https://iticse.acm.org/{year}/
     keywords: [working group, abstract, paper, deadline]
@@ -136,6 +160,10 @@ series:
     organizer: EDEN Digital Learning Europe
     icore: null
     continent: Europe
+    # languages: https://eden-europe.eu/
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [digital-education]
     keywords: [call for, workshop, deadline]
     editions:
@@ -152,6 +180,10 @@ series:
     kind: German national, proceedings in GI LNI
     icore: null
     continent: Europe
+    # languages: https://delfi-tagung.de/2026/call-for-papers; GI LNI
+    languages: [de, en]
+    proceedings_languages: [de, en]
+    language_source: stated
     topics: [digital-education, computing-education]
     url_pattern: https://delfi-tagung.de/{year}/
     deadlines_pattern: https://delfi-tagung.de/{year}/termine
@@ -187,6 +219,10 @@ series:
     kind: practice festival, no proceedings
     icore: null
     continent: Europe
+    # languages: https://sessionize.com/universityfuture-festival-2026-under-pressure/; bilingual festival, no proceedings
+    languages: [de, en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [digital-education]
     keywords: [call for participation, einreichung, frist]
     editions:
@@ -205,6 +241,10 @@ series:
     kind: practice forum
     icore: null
     continent: Europe
+    # languages: https://sessionize.com/turn-conference-26; German-only call, no proceedings
+    languages: [de]
+    proceedings_languages: []
+    language_source: inferred
     topics: [digital-education, sotl]
     url_pattern: https://sessionize.com/turn-conference-{yy}
     keywords: [call for papers, deadline, closes]
@@ -224,6 +264,10 @@ series:
     organizer: University of Eastern Finland, ACM proceedings
     icore: null
     continent: Europe
+    # languages: https://www.kolicalling.fi/call-for-papers/; ACM ICPS
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [computing-education]
     keywords: [submission, workshop, deadline]
     editions:
@@ -242,6 +286,10 @@ series:
     organizer: EA-TEL, Springer LNCS
     icore: EC-TEL
     continent: Europe
+    # languages: https://ea-tel.eu/; Springer LNCS
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [digital-education]
     keywords: [workshop, proposal, deadline]
     editions:
@@ -257,6 +305,10 @@ series:
     kind: German-speaking society conference
     icore: null
     continent: Europe
+    # languages: https://gmw2026.at/call-for-contributions/; German call and template; English only after asking the organisers
+    languages: [de]
+    proceedings_languages: [de]
+    language_source: inferred
     topics: [digital-education]
     keywords: [call, einreichung, frist, workshop]
     editions:
@@ -271,6 +323,10 @@ series:
     organizer: EADTU (European distance and open universities)
     icore: null
     continent: Europe
+    # languages: official EADTU call
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [digital-education]
     keywords: [call for abstracts, deadline, submission]
     editions:
@@ -290,6 +346,10 @@ series:
     kind: mixed academia and industry
     icore: null
     continent: Europe
+    # languages: https://is.oeb.global/conference/submit-a-proposal; sessions only
+    languages: [en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [digital-education]
     keywords: [proposal, deadline, submit]
     editions:
@@ -308,6 +368,10 @@ series:
     kind: German-speaking society conference
     icore: null
     continent: Europe
+    # languages: submission procedure page of the 2027 host, since removed; no regular proceedings
+    languages: [de, en]
+    proceedings_languages: []
+    language_source: stated
     topics: [sotl]
     keywords: [einreichung, workshop, frist]
     editions:
@@ -328,6 +392,10 @@ series:
     kind: trade fair with congress
     icore: null
     continent: Europe
+    # languages: https://www.learntec.de/; trade-fair congress, programme mostly German
+    languages: [de, en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [digital-education]
     keywords: [call for papers, einreichung, frist]
     editions:
@@ -346,6 +414,10 @@ series:
     organizer: IEEE Education Society and ASEE
     icore: FIE
     continent: North America
+    # languages: https://fie-conference.org/2026/call-for-papers; IEEE Xplore
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [engineering-education, computing-education]
     url_pattern: https://fie-conference.org/{year}
     keywords: [alternative session, workshop, special session, deadline]
@@ -366,6 +438,10 @@ series:
     organizer: ACM SIGCITE
     icore: SIGITE
     continent: North America
+    # languages: https://easychair.org/cfp/SIGCITE-26; ACM DL
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [computing-education, ai-literacy]
     url_pattern: https://easychair.org/cfp/SIGCITE-{yy}
     keywords: [special session, deadline, submission]
@@ -387,6 +463,10 @@ series:
     organizer: ACM SIGCSE
     icore: SIGCSE
     continent: North America
+    # languages: https://sigcse-ts.acm.org/2027/; ACM DL
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [computing-education]
     url_pattern: https://sigcse-ts.acm.org/{year}/
     keywords: [special session, panel, deadline]
@@ -412,6 +492,10 @@ series:
     organizer: Georgia Southern University
     icore: null
     continent: North America
+    # languages: call for proposals, Georgia Southern
+    languages: [en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [sotl]
     keywords: [proposal, deadline, submission]
     editions:
@@ -430,6 +514,11 @@ series:
     organizer: Society for Learning Analytics Research (SoLAR), ACM proceedings
     icore: LAK
     continent: South America
+    # languages: https://www.solaresearch.org/events/lak/lak27/general-call/; workshops and tutorials may be held in Spanish or Portuguese
+    languages: [en]
+    presentation_languages: [en, es, pt]
+    proceedings_languages: [en]
+    language_source: stated
     topics: [learning-analytics]
     url_pattern: https://www.solaresearch.org/events/lak/lak{yy}/
     keywords: [workshop, tutorial, deadline]
@@ -450,6 +539,10 @@ series:
     organizer: International AIED Society, Springer LNCS
     icore: AIED
     continent: Australia and Asia-Pacific
+    # languages: https://iaied.org/conferences; Springer LNCS
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [ai-in-education, ai-literacy]
     keywords: [workshop, proposal, deadline]
     editions:
@@ -465,6 +558,10 @@ series:
     organizer: Asia-Pacific Society for Computers in Education (APSCE)
     icore: ICCE
     continent: Australia and Asia-Pacific
+    # languages: https://easychair.org/cfp/ICCE2026; APSCE proceedings
+    languages: [en]
+    proceedings_languages: [en]
+    language_source: inferred
     topics: [digital-education]
     url_pattern: https://apsce.net/events/icce-{year}
     keywords: [workshop, proposal, deadline]
@@ -481,6 +578,10 @@ series:
     organizer: ISSOTL
     icore: null
     continent: Online
+    # languages: https://issotl.com/issotl25/call-for-proposals/
+    languages: [en]
+    proceedings_languages: []
+    language_source: inferred
     topics: [sotl]
     keywords: [call for proposals, deadline, workshop]
     editions:

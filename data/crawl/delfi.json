@@ -2,13 +2,13 @@
   "id": "delfi",
   "edition": 2027,
   "url": "https://delfi-tagung.de/2027/",
-  "checked": "2026-10-23T13:51:47+00:00",
-  "status": 200,
-  "final_url": "https://delfi-tagung.de/2027/",
+  "checked": "2026-10-23T18:51:37+00:00",
   "deadlines_url": {
     "url": "https://delfi-tagung.de/2027/termine",
     "status": 200
   },
+  "status": 200,
+  "final_url": "https://delfi-tagung.de/2027/",
   "sha256": "b2884d5b38e2da12802ebeeb110765b06a8b2712f6839730b44332de03e07555",
   "sha256_of": "date-lines",
   "changed_on": null,
@@ -40,6 +40,7 @@
       "context": "01.06.2027 Einreichung von Artefakt-Beiträgen"
     }
   ],
+  "language_hints": [],
   "probes": [
     {
       "url": "https://delfi-tagung.de/2028/",
