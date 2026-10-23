@@ -6,9 +6,8 @@ from datetime import date
 from html import escape
 from pathlib import Path
 
-from .registry import Call, Edition, current_edition
+from .registry import CONTINENTS, Call, Edition, current_edition
 
-CONTINENTS = ["Europe", "North America", "South America", "Australia and Asia-Pacific", "Africa", "Online"]
 SOON_DAYS = 45
 
 

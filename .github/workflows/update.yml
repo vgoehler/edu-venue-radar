@@ -6,17 +6,18 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [registry.yaml, edu_venue_radar/**]
+    paths: [registry.yaml, edu_venue_radar/**, tests/**, pyproject.toml, poetry.lock]
+  pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: update
+  group: update-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  update:
+  test:
     runs-on: ubuntu-latest
     steps:
       # Actions pinned to commits; Dependabot proposes updates.
@@ -25,6 +26,23 @@ jobs:
         with:
           python-version: "3.11"
       # Install the locked versions from poetry.lock, not the newest matching ones.
+      - run: pip install "poetry==2.1.1" && poetry install
+      - run: poetry run edu-venue-radar --root . check
+      - run: poetry run ruff check .
+      - run: poetry run pytest -q
+
+  update:
+    # Only main publishes; pull requests stop after the tests.
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version: "3.11"
       - run: pip install "poetry==2.1.1" && poetry install --only main
       # A failing ranking portal must not stop the crawl.
       - run: poetry run edu-venue-radar --root . icore || echo "ICORE lookup failed, keeping the last ranks"

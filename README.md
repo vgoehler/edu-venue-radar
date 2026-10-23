@@ -16,6 +16,7 @@ The radar lists venues and nothing else. Which venue suits which project is deci
 ```sh
 poetry install
 poetry run edu-venue-radar list            # current edition and call of every series
+poetry run edu-venue-radar check           # typos and invalid values in registry.yaml
 poetry run edu-venue-radar crawl [ids...]  # fetch pages, record changes and candidate deadlines
 poetry run edu-venue-radar icore           # look up ICORE ranks
 poetry run edu-venue-radar build           # write docs/index.html
@@ -26,7 +27,7 @@ poetry run edu-venue-radar roll <id>       # append the next edition to registry
 
 ## Updating the registry
 
-When the crawler flags a change, a candidate date or a next-edition page, open the link, check, and enter the facts in `registry.yaml`: confirmed `deadline`s under `calls`, `start`/`end`, `location`, and the edition's own `url`. To move a series to the next year by hand, `edu-venue-radar roll <id>` appends the edition with each call's previous deadline as `deadline_hint`. Field reference is at the top of `registry.yaml`.
+When the crawler flags a change, a candidate date or a next-edition page, open the link, check, and enter the facts in `registry.yaml`: confirmed `deadline`s under `calls`, `start`/`end`, `location`, and the edition's own `url`. To move a series to the next year by hand, `edu-venue-radar roll <id>` appends the edition with each call's previous deadline as `deadline_hint`. Field reference is at the top of `registry.yaml`. Run `edu-venue-radar check` afterwards; CI runs it together with ruff and the tests on every push and pull request, and only publishes when they pass.
 
 For pages that list "date, label, date, label" (like DELFI's Termine page), set `layout: date-first`, so the crawler reads the label after each date. `deadlines_pattern` adds a separate dates page to the crawl.
 

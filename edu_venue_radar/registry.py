@@ -16,6 +16,28 @@ from .dates import month_of
 # How long after an expected (not confirmed) deadline we still treat a call as open.
 GRACE_DAYS = 14
 
+CONTINENTS = ["Europe", "North America", "South America", "Australia and Asia-Pacific", "Africa", "Online"]
+LAYOUTS = {"prose", "date-first"}
+# The fields documented in the header of registry.yaml; anything else is a typo.
+SERIES_KEYS = {
+    "id",
+    "name",
+    "full_name",
+    "organizer",
+    "kind",
+    "icore",
+    "continent",
+    "topics",
+    "url_pattern",
+    "deadlines_pattern",
+    "keywords",
+    "layout",
+    "editions",
+}
+SERIES_REQUIRED = {"id", "name", "continent", "editions"}
+EDITION_KEYS = {"url", "url_is_fallback", "location", "start", "end", "when", "calls"}
+CALL_KEYS = {"deadline", "deadline_hint", "note", "closed"}
+
 
 def _yaml() -> YAML:
     y = YAML()
@@ -204,6 +226,43 @@ def roll(data: dict, series_id: str) -> int:
         entry["calls"] = calls
     series["editions"][nxt.year] = entry
     return nxt.year
+
+
+def _check_dates(where: str, raw: dict, keys: tuple[str, ...]) -> list[str]:
+    problems = []
+    for key in keys:
+        try:
+            to_date(raw.get(key))
+        except ValueError:
+            problems.append(f"{where}: {key} is not an ISO date: {raw.get(key)!r}")
+    return problems
+
+
+def validate(data: dict) -> list[str]:
+    """Typos and impossible values in the registry, one message each; empty when it is clean."""
+    problems: list[str] = []
+    seen: set[str] = set()
+    for i, s in enumerate(data.get("series") or []):
+        sid = s.get("id", f"#{i}")
+        problems += [f"{sid}: missing field {k}" for k in sorted(SERIES_REQUIRED - set(s))]
+        problems += [f"{sid}: unknown field {k}" for k in sorted(set(s) - SERIES_KEYS)]
+        if sid in seen:
+            problems.append(f"{sid}: duplicate id")
+        seen.add(sid)
+        if "continent" in s and s["continent"] not in CONTINENTS:
+            problems.append(f"{sid}: unknown continent {s['continent']!r}")
+        if s.get("layout", "prose") not in LAYOUTS:
+            problems.append(f"{sid}: unknown layout {s['layout']!r}")
+        for year, raw_edition in (s.get("editions") or {}).items():
+            where = f"{sid} {year}"
+            ed = raw_edition or {}
+            problems += [f"{where}: unknown field {k}" for k in sorted(set(ed) - EDITION_KEYS)]
+            problems += _check_dates(where, ed, ("start", "end"))
+            for kind, raw_call in (ed.get("calls") or {}).items():
+                call = raw_call or {}
+                problems += [f"{where} {kind}: unknown field {k}" for k in sorted(set(call) - CALL_KEYS)]
+                problems += _check_dates(f"{where} {kind}", call, ("deadline", "deadline_hint"))
+    return problems
 
 
 def find(data: dict, series_id: str) -> dict:

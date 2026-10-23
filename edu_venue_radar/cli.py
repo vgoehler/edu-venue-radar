@@ -15,6 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--today", type=date.fromisoformat, default=date.today(), help="pretend it is this day (ISO)")
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("list", help="show the current edition and call of every series")
+    sub.add_parser("check", help="report typos and invalid values in registry.yaml (exit 1 if any)")
     c = sub.add_parser("crawl", help="fetch the pages and record changes and candidate deadlines")
     c.add_argument("ids", nargs="*", help="only these series")
     sub.add_parser("icore", help="look up the ICORE ranks")
@@ -30,6 +31,12 @@ def main(argv: list[str] | None = None) -> int:
     icore_file = args.root / "data" / "icore.json"
     page = args.root / "docs" / "index.html"
 
+    if args.cmd == "check":
+        problems = registry.validate(reg)
+        for msg in problems:
+            print(msg)
+        print(f"{len(reg['series'])} series, {len(problems)} problems")
+        return 1 if problems else 0
     if args.cmd == "list":
         for s in reg["series"]:
             ed = registry.current_edition(s, args.today)
