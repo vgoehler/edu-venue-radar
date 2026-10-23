@@ -185,6 +185,8 @@ def test_build_groups_by_year_and_marks_soon(tmp_path):
     assert "page up: a.org/2028/" in html
     assert "ICORE2026" in html
     assert "guessed from the last edition" in html  # Beta rolled to 2028
+    assert '<tr class="ev-confirmed"' in html and '<tr class="ev-guessed"' in html
+    assert "confirmed for this edition: </span><strong>Alpha 2027" in html
 
 
 def test_conference_text():

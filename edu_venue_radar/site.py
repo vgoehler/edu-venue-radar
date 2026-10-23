@@ -11,6 +11,11 @@ from .schema import CrawlRecord, Rank, RankFile, RegistryData, SeriesData
 from .worldmap import world_map
 
 SOON_DAYS = 45
+EVIDENCE = {
+    "confirmed": "confirmed for this edition",
+    "partial": "edition entered, deadlines from last year",
+    "guessed": "guessed from last year",
+}
 
 
 def fmt(d: date | None) -> str:
@@ -130,8 +135,8 @@ def row(series: SeriesData, ed: Edition, crawl: CrawlRecord | None, rank: Rank |
         link += f'<br><a href="{escape(ed.call_url)}">call</a>'
     guessed = '<div class="note">not yet in the registry, guessed from the last edition</div>' if ed.synthesized else ""
     html = f"""
-      <tr data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
-        <td><strong>{escape(series["name"])} {ed.year}</strong><div class="note">{escape(series.get("full_name", ""))}</div>{chips}{guessed}</td>
+      <tr class="ev-{ed.evidence}" data-topics="{escape(topics)}" data-langs="{escape(" ".join(series.get("languages", [])))}">
+        <td><span class="sr">{EVIDENCE[ed.evidence]}: </span><strong>{escape(series["name"])} {ed.year}</strong><div class="note">{escape(series.get("full_name", ""))}</div>{chips}{guessed}</td>
         <td>{escape(series.get("organizer", ""))}{kind}</td>
         <td class="rank">{rank_html}</td>
         <td>{escape(ed.location or "")}</td>
@@ -190,6 +195,9 @@ def build(registry: RegistryData, crawl_dir: Path, icore_file: Path, out: Path, 
         worldmap=world_map(counts),
         online=counts.get("Online", 0),
         language_filters=language_filters,
+        ev_confirmed=EVIDENCE["confirmed"],
+        ev_partial=EVIDENCE["partial"],
+        ev_guessed=EVIDENCE["guessed"],
         icore_source=source,
         soon=SOON_DAYS,
     )
@@ -215,13 +223,13 @@ TEMPLATE = """<!doctype html>
   :root:not([data-theme="light"]) {{
     --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
     --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
+    --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
   }}
 }}
 :root[data-theme="dark"] {{
   --bg: #16181b; --fg: #e6e6e3; --muted: #9aa0a6; --line: #2c3036; --head: #1f2227;
   --accent: #8ab4e0; --soon: #f28b82; --soon-bg: #3a1f1d; --open: #81c995; --flag: #f3c76b; --flag-bg: #3a3020;
-  --chip: #253041;
+  --chip: #253041; --land: #34404f; --land-hover: #46576b; --land-on: #4f8fd0;
 }}
 * {{ box-sizing: border-box; }}
 body {{ margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
@@ -238,6 +246,16 @@ table {{ border-collapse: collapse; width: 100%; min-width: 1100px; }}
 th, td {{ text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }}
 th {{ background: var(--head); font-size: .85rem; font-weight: 600; }}
 tr:last-child td {{ border-bottom: 0; }}
+/* Bar before each row: how much of the edition is confirmed. Solid, dotted and striped, so it does not rely on colour. */
+.ev-confirmed {{ --ev: var(--open); --ev-bg: var(--open); }}
+.ev-partial {{ --ev: var(--flag); --ev-bg: repeating-linear-gradient(180deg, var(--flag) 0 4px, transparent 4px 7px); }}
+.ev-guessed {{ --ev: var(--muted); --ev-bg: repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 5px); }}
+tbody tr td:first-child {{ position: relative; padding-left: 16px; }}
+tbody tr td:first-child::before {{ content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--ev-bg); }}
+.legend {{ display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 4px 0 16px; font-size: .88rem; color: var(--muted); }}
+.legend strong {{ color: var(--fg); }}
+.legend .ev {{ display: inline-block; width: 6px; height: 1.1em; vertical-align: -3px; margin-right: 6px; background: var(--ev-bg); }}
+.sr {{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }}
 .note {{ color: var(--muted); font-size: .82rem; margin-top: 2px; }}
 .muted {{ color: var(--muted); }}
 .mapbox {{ display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin: 18px 0 6px; }}
@@ -288,6 +306,10 @@ Deadlines due within {soon} days are marked red. Each series shows its next edit
 <p class="note">Click a continent to show only its venues; click more to add them.</p></div></div>
 <div class="filters" id="filters"><strong>Topics:</strong> {filters}</div>
 <div class="filters" id="langs"><strong>Submission in:</strong> {language_filters}</div>
+<div class="legend"><strong>Data:</strong>
+<span><i class="ev ev-confirmed"></i>{ev_confirmed}</span>
+<span><i class="ev ev-partial"></i>{ev_partial}</span>
+<span><i class="ev ev-guessed"></i>{ev_guessed}</span></div>
 {sections}
 <footer>
 <p><strong>Calls</strong> lists each call of the edition (workshops, papers, special sessions, ...). A bold date is confirmed

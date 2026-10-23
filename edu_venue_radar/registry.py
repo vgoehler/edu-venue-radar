@@ -156,6 +156,22 @@ class Edition:
         month = month_of(self.when or "") or 7
         return date(self.year, month, 1)
 
+    @property
+    def evidence(self) -> str:
+        """How much of the edition is confirmed.
+
+        confirmed: at least one deadline confirmed for this edition;
+        partial: something of this edition is known (its dates, place or own page), deadlines only from last year;
+        guessed: nothing of this edition is known yet, everything comes from the previous one.
+        """
+        if any(c.deadline for c in self.calls) and not self.synthesized:
+            return "confirmed"
+        own_page = bool(self.url) and not self.url_is_fallback
+        place = bool(self.location) and not (self.location or "").startswith("not announced")
+        if not self.synthesized and (self.start or own_page or place):
+            return "partial"
+        return "guessed"
+
     def live_calls(self, today: date) -> list[Call]:
         return [c for c in self.calls if c.status(today) != "closed"]
 

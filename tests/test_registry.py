@@ -107,3 +107,15 @@ def test_shipped_registry_loads_and_every_series_has_a_current_edition():
     assert len(ids) == len(set(ids))
     for s in data["series"]:
         assert current_edition(s, TODAY).url, s["id"]
+
+
+def test_evidence_of_an_edition():
+    confirmed = series(**{"2027": {"start": "2027-04-06", "calls": {"papers": {"deadline": "2026-12-01"}}}})
+    assert current_edition(confirmed, TODAY).evidence == "confirmed"
+    partial = series(**{"2027": {"location": "Graz", "when": "March 2027", "calls": {"papers": {"deadline_hint": "2025-12-01"}}}})
+    assert current_edition(partial, TODAY).evidence == "partial"
+    guessed = series(**{"2027": {"start": "2027-02-09", "calls": {"papers": {"deadline": "2026-08-15"}}}})
+    assert current_edition(guessed, TODAY).evidence == "guessed"
+    placeholder = {"url": "https://x.org/2026/", "url_is_fallback": True, "location": "not announced (2026: Graz)"}
+    rolled = series(**{"2027": {**placeholder, "when": "November 2027", "calls": {"papers": {"deadline_hint": "2026-08-16"}}}})
+    assert current_edition(rolled, TODAY).evidence == "guessed"
