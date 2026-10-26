@@ -1,8 +1,8 @@
 {
   "id": "sotl-commons",
-  "edition": 2027,
+  "edition": 2028,
   "url": "https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals",
-  "checked": "2026-10-23T20:07:07+00:00",
+  "checked": "2026-10-26T11:16:28+00:00",
   "status": 200,
   "final_url": "https://www.georgiasouthern.edu/faculty-staff/scholarship-teaching-learning/commons-conference/call-for-proposals",
   "page_hashes": {
@@ -11,12 +11,6 @@
   "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:31+00:00",
-  "candidates": [
-    {
-      "when": "2026-10-23",
-      "keyword": "deadline",
-      "context": "Read More… Proposal Submissions Call for Proposals Opens : August 10, 2026 Proposal Submission Deadline: October 23, 2026 Notice of Proposal Acceptance: Notifications sent on December 7, 2026 Confirmation of Proposal Acceptance : January 15, 2027 To remain in the Conference Progra"
-    }
-  ],
+  "candidates": [],
   "language_hints": []
 }

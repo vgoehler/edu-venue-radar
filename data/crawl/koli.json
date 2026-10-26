@@ -2,13 +2,14 @@
   "id": "koli",
   "edition": 2027,
   "url": "https://www.kolicalling.fi/",
-  "checked": "2026-10-23T20:06:46+00:00",
-  "status": 200,
+  "checked": "2026-10-26T11:15:33+00:00",
+  "status": null,
   "final_url": "https://www.kolicalling.fi/",
+  "error": "ConnectTimeout",
+  "sha256_of": "date-lines-by-page",
   "page_hashes": {
     "https://www.kolicalling.fi/": "ac27cba4a8e932b5b77ea7f7ea771c9e6ead39c45f3a83aff73fc9d43fa368cf"
   },
-  "sha256_of": "date-lines-by-page",
   "changed_on": null,
   "first_seen": "2026-10-23T10:29:09+00:00",
   "candidates": [],
