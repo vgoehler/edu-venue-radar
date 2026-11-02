@@ -2,7 +2,7 @@
   "id": "educon",
   "edition": 2027,
   "url": "https://educon-conference.org/2027",
-  "checked": "2026-10-26T11:15:10+00:00",
+  "checked": "2026-11-02T13:38:42+00:00",
   "call_url": {
     "url": "https://educon-conference.org/2027/authors/call-for-papers",
     "status": 200
@@ -11,17 +11,12 @@
   "final_url": "https://educon-conference.org/2027",
   "page_hashes": {
     "https://educon-conference.org/2027": "912673254426160d04021736be5d15adc543e69a86c4ce6274a07d7fb1b30177",
-    "https://educon-conference.org/2027/authors/call-for-papers": "aa7bfc87938797b63337b55aa1c709f7c8b990e28f1e6fa25868fc07b02dc577"
+    "https://educon-conference.org/2027/authors/call-for-papers": "fd6bbd6d0f26c92d942def675916d275032e75785f7aadf82b82dde448d0068f"
   },
   "sha256_of": "date-lines-by-page",
-  "changed_on": "2026-10-23T19:01:53+00:00",
+  "changed_on": "2026-11-02T13:38:42+00:00",
   "first_seen": "2026-10-23T10:28:19+00:00",
   "candidates": [
-    {
-      "when": "2026-10-30",
-      "keyword": "special session",
-      "context": "s & Information Oct 08, 2026 Alternative Session Proposal Submission (Special Session) Oct 26, 2026 Alternative Session Proposal Notification (Special Session) Oct 30, 2026 Abstract Submission Deadline (all paper formats) Nov 06, 2026 Abstract Notifications Dec 07, 2026 Preliminary Paper Submission Deadline Dec 07, 2026 Submission"
-    },
     {
       "when": "2026-12-07",
       "keyword": "abstract",
