@@ -2,14 +2,14 @@
   "id": "turn",
   "edition": 2027,
   "url": "https://sessionize.com/turn-conference-26",
-  "checked": "2026-11-02T13:38:58+00:00",
+  "checked": "2026-11-09T14:01:23+00:00",
   "status": 200,
   "final_url": "https://sessionize.com/turn-conference-26",
   "page_hashes": {
-    "https://sessionize.com/turn-conference-26": "4ac9b7eb68cec24a604fd871fd2adfdf357054ddfa403874c8092831c3611603"
+    "https://sessionize.com/turn-conference-26": "09bad6aaccff2893a8c342687f4b74f4bfcc8ef9fdd11faeca566e128e1a0242"
   },
   "sha256_of": "date-lines-by-page",
-  "changed_on": "2026-11-02T13:38:58+00:00",
+  "changed_on": "2026-11-09T14:01:23+00:00",
   "first_seen": "2026-10-23T10:29:08+00:00",
   "candidates": [],
   "language_hints": [],

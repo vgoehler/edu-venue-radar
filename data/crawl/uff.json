@@ -2,15 +2,21 @@
   "id": "uff",
   "edition": 2027,
   "url": "https://festival.hfd.digital",
-  "checked": "2026-11-02T13:38:56+00:00",
+  "checked": "2026-11-09T14:01:21+00:00",
   "status": 200,
   "final_url": "https://festival.hfd.digital/en/",
   "page_hashes": {
-    "https://festival.hfd.digital": "fe29a311c0800a09301b2b02cf194967bd02d141b62a38a41b82cc347f137060"
+    "https://festival.hfd.digital": "f051346d380f4a22d61ba667734a0b0a9c601eaa4429683bd8a9b6efdb1868e0"
   },
   "sha256_of": "date-lines-by-page",
-  "changed_on": null,
+  "changed_on": "2026-11-09T14:01:21+00:00",
   "first_seen": "2026-10-23T10:29:06+00:00",
-  "candidates": [],
+  "candidates": [
+    {
+      "when": "2027-01-11",
+      "keyword": "call for participation",
+      "context": "Until 11 January 2027 , individuals are invited to submit proposals for inputs, lightning talks, discussions, workshops and networking formats through the Call for Participation ."
+    }
+  ],
   "language_hints": []
 }

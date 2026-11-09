@@ -2,7 +2,7 @@
   "id": "delfi",
   "edition": 2027,
   "url": "https://delfi-tagung.de/2027/",
-  "checked": "2026-11-02T13:38:53+00:00",
+  "checked": "2026-11-09T14:01:19+00:00",
   "status": null,
   "final_url": "https://delfi-tagung.de/2027/",
   "error": "ConnectionError",
@@ -44,7 +44,7 @@
   "probes": [
     {
       "url": "https://delfi-tagung.de/2028/",
-      "status": 404,
+      "status": null,
       "final_url": "https://delfi-tagung.de/2028/",
       "exists": false
     }
